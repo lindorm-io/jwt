@@ -106,7 +106,7 @@ const EC_PUBLIC_KEY =
 const ecKey = new KeyPair({
   id: uuid(),
   created: new Date("2020-01-01 08:00:00.000"),
-  expired: null,
+  expires: null,
   algorithm: "ES512",
   type: "ec",
   privateKey: EC_PRIVATE_KEY,
@@ -116,7 +116,7 @@ const ecKey = new KeyPair({
 const rsaKey = new KeyPair({
   id: uuid(),
   created: new Date("2020-01-01 08:00:00.000"),
-  expired: null,
+  expires: null,
   algorithm: "RS512",
   type: "rsa",
   passphrase: RSA_PASSPHRASE,
