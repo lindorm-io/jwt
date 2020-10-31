@@ -1,4 +1,4 @@
-import { ExtendableError } from "@lindorm-io/global";
+import { ExtendableError } from "@lindorm-io/core";
 
 export class InvalidTokenClientError extends ExtendableError {
   constructor(expect: string, actual: string) {

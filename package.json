@@ -1,6 +1,6 @@
 {
   "name": "@lindorm-io/jwt",
-  "description": "JWT utilities for lindorm.io packages",
+  "description": "JWT tools for lindorm.io packages",
   "version": "0.0.1",
   "license": "ISC",
   "main": "dist/index.js",
@@ -36,25 +36,19 @@
     "validate": "npm run test:clear && npm run lint && npm run typecheck && npm run test"
   },
   "dependencies": {
+    "@lindorm-io/core": "^0.0.1",
+    "@lindorm-io/key-pair": "^0.0.2",
+    "@lindorm-io/winston": "^0.0.2",
     "date-fns": "^2.16.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "uuid": "^8.3.1"
   },
-  "peerDependencies": {
-    "@lindorm-io/common": ">=0.0.1",
-    "@lindorm-io/global": ">=0.0.1",
-    "@lindorm-io/key-pair": ">=0.0.1",
-    "@lindorm-io/winston": ">=0.0.1"
-  },
+  "peerDependencies": {},
   "devDependencies": {
-    "@lindorm-io/common": "^0.0.1",
-    "@lindorm-io/global": "^0.0.1",
-    "@lindorm-io/key-pair": "^0.0.1",
-    "@lindorm-io/winston": "^0.0.1",
     "@types/jest": "^26.0.15",
     "@types/jsonwebtoken": "^8.5.0",
-    "@types/lodash": "^4.14.163",
+    "@types/lodash": "^4.14.164",
     "@types/node": "^14.14.6",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.6.0",

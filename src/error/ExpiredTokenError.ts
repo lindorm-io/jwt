@@ -1,4 +1,4 @@
-import { ExtendableError } from "@lindorm-io/global";
+import { ExtendableError } from "@lindorm-io/core";
 import { TokenExpiredError } from "jsonwebtoken";
 
 export class ExpiredTokenError extends ExtendableError {

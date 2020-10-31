@@ -1,4 +1,4 @@
-import { ExtendableError } from "@lindorm-io/global";
+import { ExtendableError } from "@lindorm-io/core";
 import { NotBeforeError } from "jsonwebtoken";
 
 export class InvalidTokenAudienceError extends ExtendableError {

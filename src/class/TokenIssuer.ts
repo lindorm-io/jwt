@@ -1,8 +1,7 @@
 import { Keystore } from "@lindorm-io/key-pair";
 import { Logger } from "@lindorm-io/winston";
-import { TObject } from "@lindorm-io/global";
+import { TObject, camelKeys, snakeKeys, stringComparison, stringToDurationObject } from "@lindorm-io/core";
 import { add, getUnixTime, isBefore, isDate } from "date-fns";
-import { camelKeys, snakeKeys, stringComparison, stringToDurationObject } from "@lindorm-io/common";
 import { decode, sign, verify, Algorithm, JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken";
 import { isNumber, isString, includes } from "lodash";
 import { sanitiseToken } from "../util";

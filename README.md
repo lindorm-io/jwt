@@ -1,17 +1,10 @@
 # @lindorm-io/jwt
-This package contains JWT utilities for lindorm.io packages.
+JWT tools for lindorm.io packages.
 
 ## Installation
 ```shell script
 npm install --save @lindorm-io/jwt
 ```
-
-### Peer Dependencies
-This package has the following peer dependencies: 
-* [@lindorm-io/common](https://www.npmjs.com/package/@lindorm-io/common)
-* [@lindorm-io/global](https://www.npmjs.com/package/@lindorm-io/global)
-* [@lindorm-io/key-pair](https://www.npmjs.com/package/@lindorm-io/key-pair)
-* [@lindorm-io/winston](https://www.npmjs.com/package/@lindorm-io/winston)
 
 ## Usage
 

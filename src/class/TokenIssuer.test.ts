@@ -1,7 +1,7 @@
 import MockDate from "mockdate";
 import { KeyPair, Keystore } from "@lindorm-io/key-pair";
 import { TokenIssuer } from "./TokenIssuer";
-import { baseParse } from "@lindorm-io/common";
+import { baseParse } from "@lindorm-io/core";
 import { getUnixTime } from "date-fns";
 import { v4 as uuid } from "uuid";
 import {

@@ -1,5 +1,6 @@
 /.idea
 /.vscode
+/coverage
 /data
 /node_modules
 /src

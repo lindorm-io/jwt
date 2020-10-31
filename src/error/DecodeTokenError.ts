@@ -1,4 +1,4 @@
-import { ExtendableError } from "@lindorm-io/global";
+import { ExtendableError } from "@lindorm-io/core";
 
 export class DecodeTokenError extends ExtendableError {
   constructor(error: Error) {
