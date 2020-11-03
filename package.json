@@ -19,7 +19,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "concurrently 'rimraf coverage' 'rimraf dist'",
-    "coverage": "jest --coverage",
+    "coverage": "jest --coverage --forceExit",
     "lint": "eslint --ext .ts ./src/",
     "lint:fix": "eslint --ext .ts ./src/ --fix",
     "postversion": "git push --no-verify && git push --tags --no-verify",
