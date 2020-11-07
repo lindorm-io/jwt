@@ -25,7 +25,7 @@ export interface ITokenIssuerOptions {
   logger: Logger;
 }
 
-export interface IClaims {
+export interface ITokenIssuerClaims {
   aud: string;
   exp: number;
   iat: number;
@@ -45,7 +45,7 @@ export interface IClaims {
   payload?: any;
 }
 
-export interface ISignOptions {
+export interface ITokenIssuerSignOptions {
   audience: string;
   expiry: TExpiry;
   subject: string;
@@ -61,7 +61,7 @@ export interface ISignOptions {
   scope?: string;
 }
 
-export interface ISignData {
+export interface ITokenIssuerSignData {
   id: string;
   expiresIn: number;
   expires: number;
@@ -69,7 +69,12 @@ export interface ISignData {
   token: string;
 }
 
-export interface IVerifyOptions {
+export interface ITokenIssuerDecodeData {
+  keyId: string;
+  claims: ITokenIssuerClaims;
+}
+
+export interface ITokenIssuerVerifyOptions {
   audience: string;
   token: string;
 
@@ -78,7 +83,7 @@ export interface IVerifyOptions {
   issuer?: string;
 }
 
-export interface IVerifyData {
+export interface ITokenIssuerVerifyData {
   id: string;
   authContextClass: string;
   authMethodsReference: string;
@@ -102,7 +107,7 @@ export class TokenIssuer {
     this.logger = options.logger;
   }
 
-  public sign(options: ISignOptions): ISignData {
+  public sign(options: ITokenIssuerSignOptions): ITokenIssuerSignData {
     this.logger.debug("sign token", options);
 
     const {
@@ -127,7 +132,7 @@ export class TokenIssuer {
 
     this.logger.debug("creating claims object");
 
-    const claims: IClaims = {
+    const claims: ITokenIssuerClaims = {
       aud: audience,
       exp: expires,
       iat: now,
@@ -186,32 +191,7 @@ export class TokenIssuer {
     };
   }
 
-  public verify(options: IVerifyOptions): IVerifyData {
-    const data = this.decode(options);
-
-    return {
-      id: data.jti,
-      authContextClass: data.acr || "",
-      authMethodsReference: data.amr || "",
-      clientId: data.cid || "",
-      deviceId: data.did || "",
-      level: data.lvl || 0,
-      payload: data.payload ? camelKeys(data.payload) : {},
-      permission: data.iam || "",
-      scope: data.scp || "",
-      subject: data.sub,
-    };
-  }
-
-  public static expiryToDate(expiry: number): Date {
-    return new Date(expiry * 1000);
-  }
-
-  public static dateToExpiry(date: Date): number {
-    return getUnixTime(date);
-  }
-
-  private decode(options: IVerifyOptions): IClaims {
+  public verify(options: ITokenIssuerVerifyOptions): ITokenIssuerVerifyData {
     options.issuer = options.issuer || this.issuer;
 
     const { audience, clientId, deviceId, issuer, token } = options;
@@ -224,10 +204,7 @@ export class TokenIssuer {
       token: sanitiseToken(token),
     });
 
-    const {
-      header: { kid: keyId },
-      payload: decoded,
-    }: any = decode(token, { complete: true });
+    const { keyId, claims } = TokenIssuer.decode(token);
 
     const key = this.keystore.getKey(keyId);
     const algorithm: unknown = key.algorithm;
@@ -269,15 +246,43 @@ export class TokenIssuer {
       throw err;
     }
 
-    if (clientId && !stringComparison(clientId, decoded.cid)) {
-      throw new InvalidTokenClientError(clientId, decoded.cid);
+    if (clientId && !stringComparison(clientId, claims.cid)) {
+      throw new InvalidTokenClientError(clientId, claims.cid);
     }
 
-    if (deviceId && !stringComparison(deviceId, decoded.did)) {
-      throw new InvalidTokenDeviceError(deviceId, decoded.did);
+    if (deviceId && !stringComparison(deviceId, claims.did)) {
+      throw new InvalidTokenDeviceError(deviceId, claims.did);
     }
 
-    return decoded;
+    return {
+      id: claims.jti,
+      authContextClass: claims.acr || null,
+      authMethodsReference: claims.amr || null,
+      clientId: claims.cid || null,
+      deviceId: claims.did || null,
+      level: claims.lvl || 0,
+      payload: claims.payload ? camelKeys(claims.payload) : {},
+      permission: claims.iam || null,
+      scope: claims.scp || null,
+      subject: claims.sub,
+    };
+  }
+
+  public static decode(token: string): any {
+    const {
+      header: { kid: keyId },
+      payload: claims,
+    }: any = decode(token, { complete: true });
+
+    return { keyId, claims };
+  }
+
+  public static expiryToDate(expiry: number): Date {
+    return new Date(expiry * 1000);
+  }
+
+  public static dateToExpiry(date: Date): number {
+    return getUnixTime(date);
   }
 
   private static getExpiry(expiry: TExpiry): number {

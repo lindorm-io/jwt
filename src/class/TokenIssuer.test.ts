@@ -2,7 +2,6 @@ import MockDate from "mockdate";
 import { KeyPair, Keystore } from "@lindorm-io/key-pair";
 import { TokenIssuer } from "./TokenIssuer";
 import { baseParse } from "@lindorm-io/core";
-import { getUnixTime } from "date-fns";
 import { v4 as uuid } from "uuid";
 import {
   ExpiredTokenError,
@@ -132,9 +131,9 @@ const logger = {
 
 const parseTokenData = (token: string): any => JSON.parse(baseParse(token.split(".")[1]));
 
-describe("TokenIssuer.ts", () => {
-  MockDate.set("2020-01-01 09:00:00.000");
+MockDate.set("2020-01-01 09:00:00.000");
 
+describe("TokenIssuer.ts", () => {
   let clientId: any;
   let issuer: any;
   let handler: TokenIssuer;
@@ -230,21 +229,39 @@ describe("TokenIssuer.ts", () => {
   });
 
   test("should create", () => {
-    const result = handler.sign(options);
-    const unix = getUnixTime(Date.now());
+    expect(handler.sign(options)).toStrictEqual({
+      expires: 1577865610,
+      expiresIn: 10,
+      id: expect.any(String),
+      level: 9001,
+      token: expect.any(String),
+    });
+  });
 
-    expect(typeof result.id).toBe("string");
-    expect(typeof result.expires).toBe("number");
-    expect(typeof result.expiresIn).toBe("number");
-    expect(typeof result.level).toBe("number");
-    expect(typeof result.token).toBe("string");
-
-    expect(result.id.length).toBe(36);
-    expect(result.expires).toBeGreaterThan(unix + 8);
-    expect(result.expires).toBeLessThan(unix + 12);
-    expect(result.expiresIn).toBe(10);
-    expect(result.level).toBe(9001);
-    expect(result.token.length).toBeGreaterThan(600);
+  test("should decode", () => {
+    const { id, token } = handler.sign(options);
+    expect(TokenIssuer.decode(token)).toStrictEqual({
+      claims: {
+        acr: "mock-acr",
+        amr: "mock-amr",
+        aud: "mock-audience",
+        cid: "mock-client-id",
+        did: "mock-device-id",
+        exp: 1577865610,
+        iam: "mock-permission",
+        iat: 1577865600,
+        iss: "mock-issuer",
+        jti: id,
+        lvl: 9001,
+        nbf: 1577865600,
+        payload: {
+          mock: "mock",
+        },
+        scp: "mock-scope",
+        sub: "mock-subject",
+      },
+      keyId: expect.any(String),
+    });
   });
 
   test("should verify", () => {
@@ -285,14 +302,14 @@ describe("TokenIssuer.ts", () => {
       }),
     ).toStrictEqual({
       id,
-      authContextClass: "",
-      authMethodsReference: "",
-      clientId: "",
-      deviceId: "",
+      authContextClass: null,
+      authMethodsReference: null,
+      clientId: null,
+      deviceId: null,
       level: 0,
       payload: {},
-      permission: "",
-      scope: "",
+      permission: null,
+      scope: null,
       subject: "mock-subject",
     });
   });
