@@ -268,7 +268,7 @@ export class TokenIssuer {
     };
   }
 
-  public static decode(token: string): any {
+  public static decode(token: string): ITokenIssuerDecodeData {
     const {
       header: { kid: keyId },
       payload: claims,
