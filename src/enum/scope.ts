@@ -2,6 +2,7 @@ export enum Scope {
   DEFAULT = "default",
   EDIT = "edit",
 
+  OPENID = "openid",
   ADDRESS = "address",
   BIRTH_DATE = "birth_date",
   FAMILY_NAME = "family_name",
