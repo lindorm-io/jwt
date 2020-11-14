@@ -40,7 +40,7 @@ export interface ITokenIssuerClaims {
   did?: string;
   iam?: string;
   lvl?: number;
-  scp?: string;
+  sco?: string;
 
   payload?: any;
 }
@@ -161,7 +161,7 @@ export class TokenIssuer {
       claims.lvl = level;
     }
     if (scope) {
-      claims.scp = scope;
+      claims.sco = scope;
     }
     if (payload) {
       claims.payload = snakeKeys(payload);
@@ -263,7 +263,7 @@ export class TokenIssuer {
       level: claims.lvl || 0,
       payload: claims.payload ? camelKeys(claims.payload) : {},
       permission: claims.iam || null,
-      scope: claims.scp || null,
+      scope: claims.sco || null,
       subject: claims.sub,
     };
   }

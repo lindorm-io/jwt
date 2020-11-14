@@ -133,7 +133,7 @@ const parseTokenData = (token: string): any => JSON.parse(baseParse(token.split(
 
 MockDate.set("2020-01-01 09:00:00.000");
 
-describe("TokenIssuer.ts", () => {
+describe("TokenIssuer", () => {
   let clientId: any;
   let issuer: any;
   let handler: TokenIssuer;
@@ -257,7 +257,7 @@ describe("TokenIssuer.ts", () => {
         payload: {
           mock: "mock",
         },
-        scp: "mock-scope",
+        sco: "mock-scope",
         sub: "mock-subject",
       },
       keyId: expect.any(String),

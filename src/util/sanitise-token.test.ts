@@ -1,7 +1,7 @@
 import { sanitiseToken } from "./sanitise-token";
 import { sign } from "jsonwebtoken";
 
-describe("sanitise-token.ts", () => {
+describe("sanitiseToken", () => {
   let token: string;
   let split: Array<string>;
 
