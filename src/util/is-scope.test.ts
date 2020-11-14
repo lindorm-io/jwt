@@ -1,5 +1,15 @@
-import { isScope } from "./is-scope";
 import { Scope } from "../enum";
+import { isScope, isValidScope } from "./is-scope";
+
+describe("isValidScope", () => {
+  test("should resolve true when scope is valid", () => {
+    expect(isValidScope("default edit birth_date")).toBe(true);
+  });
+
+  test("should resolve false when scope is not valid", () => {
+    expect(isValidScope("defaultedit")).toBe(false);
+  });
+});
 
 describe("isScope", () => {
   test("should resolve true when scope exists", () => {
