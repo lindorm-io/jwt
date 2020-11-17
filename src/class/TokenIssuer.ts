@@ -246,11 +246,11 @@ export class TokenIssuer {
       throw err;
     }
 
-    if (clientId && !stringComparison(clientId, claims.cid)) {
+    if (clientId && claims.cid && !stringComparison(clientId, claims.cid)) {
       throw new InvalidTokenClientError(clientId, claims.cid);
     }
 
-    if (deviceId && !stringComparison(deviceId, claims.did)) {
+    if (deviceId && claims.did && !stringComparison(deviceId, claims.did)) {
       throw new InvalidTokenDeviceError(deviceId, claims.did);
     }
 
