@@ -1,10 +1,12 @@
 export enum Scope {
   DEFAULT = "default",
   EDIT = "edit",
-
   OPENID = "openid",
+
+  // openid claims
   ADDRESS = "address",
   BIRTH_DATE = "birth_date",
+  EMAIL = "email",
   FAMILY_NAME = "family_name",
   GENDER = "gender",
   GIVEN_NAME = "given_name",
@@ -17,4 +19,7 @@ export enum Scope {
   PROFILE = "profile",
   WEBSITE = "website",
   ZONE_INFO = "zone_info",
+
+  // lindorm.io claims
+  USERNAME = "username",
 }
