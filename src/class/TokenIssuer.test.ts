@@ -10,6 +10,7 @@ import {
   InvalidTokenClientError,
   InvalidTokenIssuerError,
 } from "../error";
+import { Logger, LogLevel } from "@lindorm-io/winston";
 
 const RSA_PASSPHRASE = "2e6187af-4b70-4333-aa63-f5fa9f4418ad";
 
@@ -123,11 +124,12 @@ const rsaKey = new KeyPair({
   publicKey: RSA_PUBLIC_KEY,
 });
 
-const logger = {
-  error: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
-};
+const logger = new Logger({
+  packageName: "name",
+  packageVersion: "version",
+  test: true,
+});
+logger.addConsole(LogLevel.ERROR);
 
 const parseTokenData = (token: string): any => JSON.parse(baseParse(token.split(".")[1]));
 

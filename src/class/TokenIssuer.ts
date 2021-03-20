@@ -104,11 +104,11 @@ export class TokenIssuer {
   constructor(options: ITokenIssuerOptions) {
     this.issuer = options.issuer;
     this.keystore = options.keystore;
-    this.logger = options.logger;
+    this.logger = options.logger.createChildLogger("TokenIssuer");
   }
 
   public sign(options: ITokenIssuerSignOptions): ITokenIssuerSignData {
-    this.logger.debug("sign token", options);
+    this.logger.debug("signing token", options);
 
     const {
       id = uuid(),
@@ -129,8 +129,6 @@ export class TokenIssuer {
     const now = TokenIssuer.dateToExpiry(new Date());
     const expires = TokenIssuer.getExpiry(expiry);
     const expiresIn = expires - now;
-
-    this.logger.debug("creating claims object");
 
     const claims: ITokenIssuerClaims = {
       aud: audience,
@@ -167,20 +165,18 @@ export class TokenIssuer {
       claims.payload = snakeKeys(payload);
     }
 
-    this.logger.debug("using keystore to find key");
+    this.logger.debug("claims object created", claims);
 
     const key = this.keystore.getCurrentKey();
     const privateKey = key.passphrase ? { passphrase: key.passphrase, key: key.privateKey } : key.privateKey;
     const algorithm: unknown = key.algorithm;
     const keyInfo = { algorithm: algorithm as Algorithm, keyid: key.id };
 
+    this.logger.debug("using key from keystore", keyInfo);
+
     const token = sign(claims, privateKey, keyInfo);
 
-    this.logger.info("token signed", {
-      claims,
-      key: { id: key.id, algorithm: key.algorithm },
-      token: sanitiseToken(token),
-    });
+    this.logger.debug("token signed", { token: sanitiseToken(token) });
 
     return {
       id,
@@ -196,7 +192,7 @@ export class TokenIssuer {
 
     const { audience, clientId, deviceId, issuer, token } = options;
 
-    this.logger.info("decode token", {
+    this.logger.debug("verifying token claims", {
       audience,
       clientId,
       deviceId,
@@ -209,8 +205,9 @@ export class TokenIssuer {
     const key = this.keystore.getKey(keyId);
     const algorithm: unknown = key.algorithm;
 
-    this.logger.debug("verifying token", {
-      key: { id: key.id, algorithm: key.algorithm },
+    this.logger.debug("decoded key info", {
+      algorithm,
+      keyid: keyId,
     });
 
     try {
@@ -220,8 +217,16 @@ export class TokenIssuer {
         clockTimestamp: TokenIssuer.dateToExpiry(new Date()),
         issuer,
       });
+
+      if (clientId && claims.cid && !stringComparison(clientId, claims.cid)) {
+        throw new InvalidTokenClientError(clientId, claims.cid);
+      }
+
+      if (deviceId && claims.did && !stringComparison(deviceId, claims.did)) {
+        throw new InvalidTokenDeviceError(deviceId, claims.did);
+      }
     } catch (err) {
-      this.logger.error(err);
+      this.logger.error("error verifying token", err);
 
       if (err instanceof TokenExpiredError) {
         throw new ExpiredTokenError(err);
@@ -246,13 +251,7 @@ export class TokenIssuer {
       throw err;
     }
 
-    if (clientId && claims.cid && !stringComparison(clientId, claims.cid)) {
-      throw new InvalidTokenClientError(clientId, claims.cid);
-    }
-
-    if (deviceId && claims.did && !stringComparison(deviceId, claims.did)) {
-      throw new InvalidTokenDeviceError(deviceId, claims.did);
-    }
+    this.logger.debug("token verified", { token: sanitiseToken(token) });
 
     return {
       id: claims.jti,
