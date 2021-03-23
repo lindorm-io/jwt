@@ -1,7 +1,7 @@
 import { Keystore } from "@lindorm-io/key-pair";
 import { Logger } from "@lindorm-io/winston";
-import { TObject, camelKeys, snakeKeys, stringComparison, stringToDurationObject } from "@lindorm-io/core";
 import { add, getUnixTime, isBefore, isDate } from "date-fns";
+import { camelKeys, snakeKeys, stringComparison, stringToDurationObject } from "@lindorm-io/core";
 import { decode, sign, verify, Algorithm, JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken";
 import { isNumber, isString, includes } from "lodash";
 import { sanitiseToken } from "../util";
@@ -16,85 +16,16 @@ import {
   InvalidTokenExpiryInput,
   InvalidTokenIssuerError,
 } from "../error";
-
-export type TExpiry = string | number | Date;
-
-export interface ITokenIssuerOptions {
-  issuer: string;
-  keystore: Keystore;
-  logger: Logger;
-}
-
-export interface ITokenIssuerClaims {
-  aud: string;
-  exp: number;
-  iat: number;
-  iss: string;
-  jti: string;
-  nbf: number;
-  sub: string;
-
-  acr?: string;
-  amr?: string;
-  cid?: string;
-  did?: string;
-  iam?: string;
-  lvl?: number;
-  sco?: string;
-
-  payload?: any;
-}
-
-export interface ITokenIssuerSignOptions {
-  audience: string;
-  expiry: TExpiry;
-  subject: string;
-
-  id?: string;
-  authContextClass?: string;
-  authMethodsReference?: string;
-  clientId?: string;
-  deviceId?: string;
-  level?: number;
-  payload?: any;
-  permission?: string;
-  scope?: string;
-}
-
-export interface ITokenIssuerSignData {
-  id: string;
-  expiresIn: number;
-  expires: number;
-  level: number;
-  token: string;
-}
-
-export interface ITokenIssuerDecodeData {
-  keyId: string;
-  claims: ITokenIssuerClaims;
-}
-
-export interface ITokenIssuerVerifyOptions {
-  audience: string;
-  token: string;
-
-  clientId?: string;
-  deviceId?: string;
-  issuer?: string;
-}
-
-export interface ITokenIssuerVerifyData {
-  id: string;
-  authContextClass: string;
-  authMethodsReference: string;
-  clientId: string;
-  deviceId: string;
-  level: number;
-  payload: TObject<any>;
-  permission: string;
-  scope: string;
-  subject: string;
-}
+import {
+  ITokenIssuerClaims,
+  ITokenIssuerDecodeData,
+  ITokenIssuerOptions,
+  ITokenIssuerSignData,
+  ITokenIssuerSignOptions,
+  ITokenIssuerVerifyData,
+  ITokenIssuerVerifyOptions,
+  TExpiry,
+} from "../typing";
 
 export class TokenIssuer {
   private issuer: string;
