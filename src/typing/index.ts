@@ -31,7 +31,7 @@ export interface ITokenIssuerSignOptions {
   id?: string;
   audience: string;
   authContextClass?: string;
-  authMethodsReference?: string;
+  authMethodsReference?: Array<string>;
   clientId?: string;
   deviceId?: string;
   expiry: TExpiry;
@@ -66,7 +66,7 @@ export interface ITokenIssuerVerifyOptions {
 export interface ITokenIssuerVerifyData {
   id: string;
   authContextClass: string;
-  authMethodsReference: string;
+  authMethodsReference: Array<string>;
   clientId: string;
   deviceId: string;
   level: number;

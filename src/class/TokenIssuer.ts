@@ -75,7 +75,7 @@ export class TokenIssuer {
       claims.acr = authContextClass;
     }
     if (authMethodsReference) {
-      claims.amr = authMethodsReference;
+      claims.amr = authMethodsReference.join(" ");
     }
     if (clientId) {
       claims.cid = clientId;
@@ -187,7 +187,7 @@ export class TokenIssuer {
     return {
       id: claims.jti,
       authContextClass: claims.acr || null,
-      authMethodsReference: claims.amr || null,
+      authMethodsReference: claims.amr ? claims.amr.split(" ") : null,
       clientId: claims.cid || null,
       deviceId: claims.did || null,
       level: claims.lvl || 0,

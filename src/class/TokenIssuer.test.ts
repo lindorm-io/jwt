@@ -28,7 +28,7 @@ describe("TokenIssuer", () => {
       id: "d2457602-63bd-48c5-a19f-bfd81bf870c0",
       audience: "mock-audience",
       authContextClass: "mock-acr",
-      authMethodsReference: "mock-amr",
+      authMethodsReference: ["mock-amr"],
       clientId: "mock-client-id",
       deviceId: "mock-device-id",
       expiry: "10 seconds",
