@@ -90,7 +90,7 @@ export class TokenIssuer {
       claims.lvl = level;
     }
     if (scope) {
-      claims.sco = scope;
+      claims.sco = scope.join(" ");
     }
     if (payload) {
       claims.payload = snakeKeys(payload);
@@ -193,7 +193,7 @@ export class TokenIssuer {
       level: claims.lvl || 0,
       payload: claims.payload ? camelKeys(claims.payload) : {},
       permission: claims.iam || null,
-      scope: claims.sco || null,
+      scope: claims.sco ? claims.sco.split(" ") : null,
       subject: claims.sub,
       token,
     };

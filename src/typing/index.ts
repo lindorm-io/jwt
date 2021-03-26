@@ -38,7 +38,7 @@ export interface ITokenIssuerSignOptions {
   level?: number;
   payload?: any;
   permission?: string;
-  scope?: string;
+  scope?: Array<string>;
   subject: string;
 }
 
@@ -72,7 +72,7 @@ export interface ITokenIssuerVerifyData {
   level: number;
   payload: Record<string, any>;
   permission: string;
-  scope: string;
+  scope: Array<string>;
   subject: string;
   token: string;
 }
