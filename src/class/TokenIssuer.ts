@@ -195,6 +195,7 @@ export class TokenIssuer {
       permission: claims.iam || null,
       scope: claims.sco || null,
       subject: claims.sub,
+      token,
     };
   }
 

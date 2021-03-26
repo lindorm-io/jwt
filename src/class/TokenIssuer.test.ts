@@ -2,7 +2,6 @@ import MockDate from "mockdate";
 import { KeyPair, Keystore } from "@lindorm-io/key-pair";
 import { TokenIssuer } from "./TokenIssuer";
 import { baseParse } from "@lindorm-io/core";
-import { v4 as uuid } from "uuid";
 import {
   ExpiredTokenError,
   InactiveTokenError,
@@ -10,7 +9,6 @@ import {
   InvalidTokenClientError,
   InvalidTokenIssuerError,
 } from "../error";
-import { Logger, LogLevel } from "@lindorm-io/winston";
 
 const RSA_PASSPHRASE = "2e6187af-4b70-4333-aa63-f5fa9f4418ad";
 
@@ -104,7 +102,7 @@ const EC_PUBLIC_KEY =
   "-----END PUBLIC KEY-----\n";
 
 const ecKey = new KeyPair({
-  id: uuid(),
+  id: "e07bc6c2-f966-4d07-98aa-a448ab574003",
   created: new Date("2020-01-01 08:00:00.000"),
   expires: null,
   algorithm: "ES512",
@@ -114,7 +112,7 @@ const ecKey = new KeyPair({
 });
 
 const rsaKey = new KeyPair({
-  id: uuid(),
+  id: "7a31c358-44e1-4433-a717-5b52ba15c8a9",
   created: new Date("2020-01-01 08:00:00.000"),
   expires: null,
   algorithm: "RS512",
@@ -124,12 +122,15 @@ const rsaKey = new KeyPair({
   publicKey: RSA_PUBLIC_KEY,
 });
 
-const logger = new Logger({
-  packageName: "name",
-  packageVersion: "version",
-  test: true,
-});
-logger.addConsole(LogLevel.ERROR);
+const logger = {
+  error: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
+  verbose: jest.fn(),
+  debug: jest.fn(),
+  silly: jest.fn(),
+  createChildLogger: () => logger,
+};
 
 const parseTokenData = (token: string): any => JSON.parse(baseParse(token.split(".")[1]));
 
@@ -146,6 +147,7 @@ describe("TokenIssuer", () => {
     clientId = "mock-client-id";
     issuer = "mock-issuer";
     options = {
+      id: "d2457602-63bd-48c5-a19f-bfd81bf870c0",
       audience: "mock-audience",
       authContextClass: "mock-acr",
       authMethodsReference: "mock-amr",
@@ -185,7 +187,7 @@ describe("TokenIssuer", () => {
           token,
         }),
       ).toStrictEqual({
-        id,
+        id: id,
         authContextClass: options.authContextClass,
         authMethodsReference: options.authMethodsReference,
         clientId: options.clientId,
@@ -195,6 +197,7 @@ describe("TokenIssuer", () => {
         permission: options.permission,
         scope: options.scope,
         subject: options.subject,
+        token: token,
       });
     });
   });
@@ -216,7 +219,7 @@ describe("TokenIssuer", () => {
           token,
         }),
       ).toStrictEqual({
-        id,
+        id: id,
         authContextClass: options.authContextClass,
         authMethodsReference: options.authMethodsReference,
         clientId: options.clientId,
@@ -226,6 +229,7 @@ describe("TokenIssuer", () => {
         permission: options.permission,
         scope: options.scope,
         subject: options.subject,
+        token: token,
       });
     });
   });
@@ -276,7 +280,7 @@ describe("TokenIssuer", () => {
         token,
       }),
     ).toStrictEqual({
-      id,
+      id: id,
       authContextClass: options.authContextClass,
       authMethodsReference: options.authMethodsReference,
       clientId: options.clientId,
@@ -286,6 +290,7 @@ describe("TokenIssuer", () => {
       permission: options.permission,
       scope: options.scope,
       subject: options.subject,
+      token: token,
     });
   });
 
@@ -303,7 +308,7 @@ describe("TokenIssuer", () => {
         token,
       }),
     ).toStrictEqual({
-      id,
+      id: id,
       authContextClass: null,
       authMethodsReference: null,
       clientId: null,
@@ -313,6 +318,7 @@ describe("TokenIssuer", () => {
       permission: null,
       scope: null,
       subject: "mock-subject",
+      token: token,
     });
   });
 

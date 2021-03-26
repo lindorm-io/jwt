@@ -10,61 +10,57 @@ export interface ITokenIssuerOptions {
 }
 
 export interface ITokenIssuerClaims {
+  acr?: string;
+  amr?: string;
   aud: string;
+  cid?: string;
+  did?: string;
   exp: number;
+  iam?: string;
   iat: number;
   iss: string;
   jti: string;
-  nbf: number;
-  sub: string;
-
-  acr?: string;
-  amr?: string;
-  cid?: string;
-  did?: string;
-  iam?: string;
   lvl?: number;
-  sco?: string;
-
+  nbf: number;
   payload?: any;
+  sco?: string;
+  sub: string;
 }
 
 export interface ITokenIssuerSignOptions {
-  audience: string;
-  expiry: TExpiry;
-  subject: string;
-
   id?: string;
+  audience: string;
   authContextClass?: string;
   authMethodsReference?: string;
   clientId?: string;
   deviceId?: string;
+  expiry: TExpiry;
   level?: number;
   payload?: any;
   permission?: string;
   scope?: string;
+  subject: string;
 }
 
 export interface ITokenIssuerSignData {
   id: string;
-  expiresIn: number;
   expires: number;
+  expiresIn: number;
   level: number;
   token: string;
 }
 
 export interface ITokenIssuerDecodeData {
-  keyId: string;
   claims: ITokenIssuerClaims;
+  keyId: string;
 }
 
 export interface ITokenIssuerVerifyOptions {
   audience: string;
-  token: string;
-
   clientId?: string;
   deviceId?: string;
   issuer?: string;
+  token: string;
 }
 
 export interface ITokenIssuerVerifyData {
@@ -78,4 +74,5 @@ export interface ITokenIssuerVerifyData {
   permission: string;
   scope: string;
   subject: string;
+  token: string;
 }
