@@ -126,7 +126,6 @@ describe("TokenIssuer", () => {
       expires: 1577865610,
       expiresIn: 10,
       id: expect.any(String),
-      level: 9001,
       token: expect.any(String),
     });
   });

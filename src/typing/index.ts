@@ -46,7 +46,6 @@ export interface ITokenIssuerSignData {
   id: string;
   expires: number;
   expiresIn: number;
-  level: number;
   token: string;
 }
 

@@ -113,7 +113,6 @@ export class TokenIssuer {
       id,
       expires,
       expiresIn,
-      level,
       token,
     };
   }
