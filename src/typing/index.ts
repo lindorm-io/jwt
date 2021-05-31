@@ -9,25 +9,27 @@ export interface ITokenIssuerOptions {
   logger: Logger;
 }
 
-export interface ITokenIssuerClaims {
+export interface IDefaultClaims {
   acr?: string;
   amr?: string;
   aud: string;
-  cid?: string;
-  did?: string;
   exp: number;
   iam?: string;
   iat: number;
   iss: string;
   jti: string;
-  lvl?: number;
   nbf: number;
-  payload?: any;
-  sco?: string;
   sub: string;
 }
 
-export interface ITokenIssuerSignOptions {
+export interface ITokenIssuerClaims<Payload> extends IDefaultClaims {
+  client_id?: string;
+  device_id?: string;
+  payload?: Payload;
+  scope?: string;
+}
+
+export interface ITokenIssuerSignOptions<Payload> {
   id?: string;
   audience: string;
   authContextClass?: string;
@@ -35,8 +37,7 @@ export interface ITokenIssuerSignOptions {
   clientId?: string;
   deviceId?: string;
   expiry: TExpiry;
-  level?: number;
-  payload?: any;
+  payload?: Payload;
   permission?: string;
   scope?: Array<string>;
   subject: string;
@@ -49,8 +50,8 @@ export interface ITokenIssuerSignData {
   token: string;
 }
 
-export interface ITokenIssuerDecodeData {
-  claims: ITokenIssuerClaims;
+export interface ITokenIssuerDecodeData<Payload> {
+  claims: ITokenIssuerClaims<Payload>;
   keyId: string;
 }
 
@@ -62,16 +63,15 @@ export interface ITokenIssuerVerifyOptions {
   token: string;
 }
 
-export interface ITokenIssuerVerifyData {
+export interface ITokenIssuerVerifyData<Payload> {
   id: string;
-  authContextClass: string;
-  authMethodsReference: Array<string>;
-  clientId: string;
-  deviceId: string;
-  level: number;
-  payload: Record<string, any>;
-  permission: string;
-  scope: Array<string>;
+  authContextClass: string | null;
+  authMethodsReference: Array<string> | null;
+  clientId: string | null;
+  deviceId: string | null;
+  payload: Payload;
+  permission: string | null;
+  scope: Array<string> | null;
   subject: string;
   token: string;
 }

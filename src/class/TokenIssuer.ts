@@ -1,9 +1,9 @@
-import { Keystore } from "@lindorm-io/key-pair";
+import { Keystore, KeyType } from "@lindorm-io/key-pair";
 import { Logger } from "@lindorm-io/winston";
 import { add, getUnixTime, isBefore, isDate } from "date-fns";
 import { camelKeys, snakeKeys, stringComparison, stringToDurationObject } from "@lindorm-io/core";
-import { decode, sign, verify, Algorithm, JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken";
-import { isNumber, isString, includes } from "lodash";
+import { decode, JsonWebTokenError, NotBeforeError, sign, TokenExpiredError, verify } from "jsonwebtoken";
+import { includes, isNumber, isString } from "lodash";
 import { sanitiseToken } from "../util";
 import { v4 as uuid } from "uuid";
 import {
@@ -28,17 +28,17 @@ import {
 } from "../typing";
 
 export class TokenIssuer {
-  private issuer: string;
-  private keystore: Keystore;
-  private logger: Logger;
+  private readonly issuer: string;
+  private readonly keystore: Keystore;
+  private readonly logger: Logger;
 
-  constructor(options: ITokenIssuerOptions) {
+  public constructor(options: ITokenIssuerOptions) {
     this.issuer = options.issuer;
     this.keystore = options.keystore;
     this.logger = options.logger.createChildLogger("TokenIssuer");
   }
 
-  public sign(options: ITokenIssuerSignOptions): ITokenIssuerSignData {
+  public sign<Payload>(options: ITokenIssuerSignOptions<Payload>): ITokenIssuerSignData {
     this.logger.debug("signing token", options);
 
     const {
@@ -51,7 +51,6 @@ export class TokenIssuer {
       authMethodsReference,
       clientId,
       deviceId,
-      level,
       payload,
       permission,
       scope,
@@ -61,7 +60,7 @@ export class TokenIssuer {
     const expires = TokenIssuer.getExpiry(expiry);
     const expiresIn = expires - now;
 
-    const claims: ITokenIssuerClaims = {
+    const claims: ITokenIssuerClaims<Payload> = {
       aud: audience,
       exp: expires,
       iat: now,
@@ -71,37 +70,25 @@ export class TokenIssuer {
       sub: subject,
     };
 
-    if (authContextClass) {
-      claims.acr = authContextClass;
-    }
-    if (authMethodsReference) {
-      claims.amr = authMethodsReference.join(" ");
-    }
-    if (clientId) {
-      claims.cid = clientId;
-    }
-    if (deviceId) {
-      claims.did = deviceId;
-    }
-    if (permission) {
-      claims.iam = permission;
-    }
-    if (level) {
-      claims.lvl = level;
-    }
-    if (scope) {
-      claims.sco = scope.join(" ");
-    }
-    if (payload) {
-      claims.payload = snakeKeys(payload);
-    }
+    if (authContextClass) claims.acr = authContextClass;
+    if (authMethodsReference) claims.amr = authMethodsReference.join(" ");
+    if (clientId) claims.client_id = clientId;
+    if (deviceId) claims.device_id = deviceId;
+    if (payload) claims.payload = snakeKeys(payload) as Payload;
+    if (permission) claims.iam = permission;
+    if (scope) claims.scope = scope.join(" ");
 
     this.logger.debug("claims object created", claims);
 
     const key = this.keystore.getCurrentKey();
-    const privateKey = key.passphrase ? { passphrase: key.passphrase, key: key.privateKey } : key.privateKey;
-    const algorithm: unknown = key.algorithm;
-    const keyInfo = { algorithm: algorithm as Algorithm, keyid: key.id };
+
+    if (!key.privateKey) {
+      throw new Error("private key missing");
+    }
+
+    const privateKey =
+      key.type === KeyType.RSA ? { passphrase: key.passphrase || "", key: key.privateKey } : key.privateKey;
+    const keyInfo = { algorithm: key.preferredAlgorithm, keyid: key.id };
 
     this.logger.debug("using key from keystore", keyInfo);
 
@@ -117,7 +104,7 @@ export class TokenIssuer {
     };
   }
 
-  public verify(options: ITokenIssuerVerifyOptions): ITokenIssuerVerifyData {
+  public verify<Payload>(options: ITokenIssuerVerifyOptions): ITokenIssuerVerifyData<Payload> {
     options.issuer = options.issuer || this.issuer;
 
     const { audience, clientId, deviceId, issuer, token } = options;
@@ -130,30 +117,29 @@ export class TokenIssuer {
       token: sanitiseToken(token),
     });
 
-    const { keyId, claims } = TokenIssuer.decode(token);
+    const { keyId, claims } = TokenIssuer.decode<Payload>(token);
 
     const key = this.keystore.getKey(keyId);
-    const algorithm: unknown = key.algorithm;
 
     this.logger.debug("decoded key info", {
-      algorithm,
-      keyid: keyId,
+      algorithms: key.algorithms,
+      keyid: key.id,
     });
 
     try {
       verify(token, key.publicKey, {
-        algorithms: [algorithm as Algorithm],
+        algorithms: key.algorithms,
         audience,
         clockTimestamp: TokenIssuer.dateToExpiry(new Date()),
         issuer,
       });
 
-      if (clientId && claims.cid && !stringComparison(clientId, claims.cid)) {
-        throw new InvalidTokenClientError(clientId, claims.cid);
+      if (clientId && claims.client_id && !stringComparison(clientId, claims.client_id)) {
+        throw new InvalidTokenClientError(clientId, claims.client_id);
       }
 
-      if (deviceId && claims.did && !stringComparison(deviceId, claims.did)) {
-        throw new InvalidTokenDeviceError(deviceId, claims.did);
+      if (deviceId && claims.device_id && !stringComparison(deviceId, claims.device_id)) {
+        throw new InvalidTokenDeviceError(deviceId, claims.device_id);
       }
     } catch (err) {
       this.logger.error("error verifying token", err);
@@ -187,18 +173,17 @@ export class TokenIssuer {
       id: claims.jti,
       authContextClass: claims.acr || null,
       authMethodsReference: claims.amr ? claims.amr.split(" ") : null,
-      clientId: claims.cid || null,
-      deviceId: claims.did || null,
-      level: claims.lvl || 0,
-      payload: claims.payload ? camelKeys(claims.payload) : {},
+      clientId: claims.client_id || null,
+      deviceId: claims.device_id || null,
+      payload: claims.payload ? (camelKeys(claims.payload) as Payload) : ({} as Payload),
       permission: claims.iam || null,
-      scope: claims.sco ? claims.sco.split(" ") : null,
+      scope: claims.scope ? claims.scope.split(" ") : null,
       subject: claims.sub,
       token,
     };
   }
 
-  public static decode(token: string): ITokenIssuerDecodeData {
+  public static decode<Payload>(token: string): ITokenIssuerDecodeData<Payload> {
     const {
       header: { kid: keyId },
       payload: claims,

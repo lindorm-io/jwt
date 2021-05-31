@@ -1,4 +1,6 @@
-export const logger = {
+import { Logger } from "@lindorm-io/winston";
+
+export const logger = ({
   error: jest.fn(),
   warn: jest.fn(),
   info: jest.fn(),
@@ -6,4 +8,4 @@ export const logger = {
   debug: jest.fn(),
   silly: jest.fn(),
   createChildLogger: () => logger,
-};
+} as unknown) as Logger;

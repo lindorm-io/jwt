@@ -2,6 +2,7 @@ import MockDate from "mockdate";
 import { Keystore } from "@lindorm-io/key-pair";
 import { TokenIssuer } from "./TokenIssuer";
 import { baseParse } from "@lindorm-io/core";
+import { getTestKeyPairEC, getTestKeyPairRSA, logger } from "../test";
 import {
   ExpiredTokenError,
   InactiveTokenError,
@@ -9,11 +10,10 @@ import {
   InvalidTokenClientError,
   InvalidTokenIssuerError,
 } from "../error";
-import { getTestKeyPairEC, getTestKeyPairRSA, logger } from "../test";
 
 const parseTokenData = (token: string): any => JSON.parse(baseParse(token.split(".")[1]));
 
-MockDate.set("2020-01-01 09:00:00.000");
+MockDate.set("2020-01-01T08:00:00.000Z");
 
 describe("TokenIssuer", () => {
   let clientId: any;
@@ -32,7 +32,6 @@ describe("TokenIssuer", () => {
       clientId: "mock-client-id",
       deviceId: "mock-device-id",
       expiry: "10 seconds",
-      level: 9001,
       payload: { mock: "mock" },
       permission: "mock-permission",
       scope: ["mock-scope"],
@@ -42,7 +41,6 @@ describe("TokenIssuer", () => {
     handler = new TokenIssuer({
       issuer,
       keystore: new Keystore({ keys: [getTestKeyPairEC()] }),
-      // @ts-ignore
       logger,
     });
   });
@@ -56,13 +54,13 @@ describe("TokenIssuer", () => {
       handler = new TokenIssuer({
         issuer,
         keystore: new Keystore({ keys: [getTestKeyPairRSA()] }),
-        // @ts-ignore
         logger,
       });
     });
 
     test("should sign/verify", () => {
       const { id, token } = handler.sign(options);
+
       expect(
         handler.verify({
           audience: options.audience,
@@ -76,7 +74,6 @@ describe("TokenIssuer", () => {
         authMethodsReference: options.authMethodsReference,
         clientId: options.clientId,
         deviceId: options.deviceId,
-        level: options.level,
         payload: options.payload,
         permission: options.permission,
         scope: options.scope,
@@ -91,13 +88,13 @@ describe("TokenIssuer", () => {
       handler = new TokenIssuer({
         issuer,
         keystore: new Keystore({ keys: [getTestKeyPairEC()] }),
-        // @ts-ignore
         logger,
       });
     });
 
     test("should sign/verify", () => {
       const { id, token } = handler.sign(options);
+
       expect(
         handler.verify({
           audience: options.audience,
@@ -111,7 +108,6 @@ describe("TokenIssuer", () => {
         authMethodsReference: options.authMethodsReference,
         clientId: options.clientId,
         deviceId: options.deviceId,
-        level: options.level,
         payload: options.payload,
         permission: options.permission,
         scope: options.scope,
@@ -132,24 +128,24 @@ describe("TokenIssuer", () => {
 
   test("should decode", () => {
     const { id, token } = handler.sign(options);
+
     expect(TokenIssuer.decode(token)).toStrictEqual({
       claims: {
         acr: "mock-acr",
         amr: "mock-amr",
         aud: "mock-audience",
-        cid: "mock-client-id",
-        did: "mock-device-id",
+        client_id: "mock-client-id",
+        device_id: "mock-device-id",
         exp: 1577865610,
         iam: "mock-permission",
         iat: 1577865600,
         iss: "mock-issuer",
         jti: id,
-        lvl: 9001,
         nbf: 1577865600,
         payload: {
           mock: "mock",
         },
-        sco: "mock-scope",
+        scope: "mock-scope",
         sub: "mock-subject",
       },
       keyId: expect.any(String),
@@ -158,6 +154,7 @@ describe("TokenIssuer", () => {
 
   test("should verify", () => {
     const { id, token } = handler.sign(options);
+
     expect(
       handler.verify({
         audience: options.audience,
@@ -171,7 +168,6 @@ describe("TokenIssuer", () => {
       authMethodsReference: options.authMethodsReference,
       clientId: options.clientId,
       deviceId: options.deviceId,
-      level: options.level,
       payload: options.payload,
       permission: options.permission,
       scope: options.scope,
@@ -199,7 +195,6 @@ describe("TokenIssuer", () => {
       authMethodsReference: null,
       clientId: null,
       deviceId: null,
-      level: 0,
       payload: {},
       permission: null,
       scope: null,
@@ -305,7 +300,7 @@ describe("TokenIssuer", () => {
 
     expect(data).toStrictEqual(
       expect.objectContaining({
-        exp: 1607770800,
+        exp: 1607774400,
         iat: 1577865600,
         nbf: 1577865600,
       }),
