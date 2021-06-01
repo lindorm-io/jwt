@@ -38,7 +38,7 @@ export class TokenIssuer {
     this.logger = options.logger.createChildLogger("TokenIssuer");
   }
 
-  public sign<Payload>(options: ITokenIssuerSignOptions<Payload>): ITokenIssuerSignData {
+  public sign<Payload extends Record<string, any>>(options: ITokenIssuerSignOptions<Payload>): ITokenIssuerSignData {
     this.logger.debug("signing token", options);
 
     const {
@@ -104,7 +104,9 @@ export class TokenIssuer {
     };
   }
 
-  public verify<Payload>(options: ITokenIssuerVerifyOptions): ITokenIssuerVerifyData<Payload> {
+  public verify<Payload extends Record<string, any>>(
+    options: ITokenIssuerVerifyOptions,
+  ): ITokenIssuerVerifyData<Payload> {
     options.issuer = options.issuer || this.issuer;
 
     const { audience, clientId, deviceId, issuer, token } = options;
