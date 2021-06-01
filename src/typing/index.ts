@@ -1,15 +1,15 @@
 import { Keystore } from "@lindorm-io/key-pair";
 import { Logger } from "@lindorm-io/winston";
 
-export type TExpiry = string | number | Date;
+export type Expiry = string | number | Date;
 
-export interface ITokenIssuerOptions {
+export interface IssuerOptions {
   issuer: string;
   keystore: Keystore;
   logger: Logger;
 }
 
-export interface IDefaultClaims {
+export interface DefaultClaims {
   acr?: string;
   amr?: string;
   aud: string;
@@ -22,40 +22,40 @@ export interface IDefaultClaims {
   sub: string;
 }
 
-export interface ITokenIssuerClaims extends IDefaultClaims {
+export interface IssuerClaims extends DefaultClaims {
   client_id?: string;
   device_id?: string;
   payload?: Record<string, any>;
   scope?: string;
 }
 
-export interface ITokenIssuerSignOptions<Payload> {
+export interface IssuerSignOptions<Payload> {
   id?: string;
   audience: string;
   authContextClass?: string;
   authMethodsReference?: Array<string>;
   clientId?: string;
   deviceId?: string;
-  expiry: TExpiry;
+  expiry: Expiry;
   payload?: Payload;
   permission?: string;
   scope?: Array<string>;
   subject: string;
 }
 
-export interface ITokenIssuerSignData {
+export interface IssuerSignData {
   id: string;
   expires: number;
   expiresIn: number;
   token: string;
 }
 
-export interface ITokenIssuerDecodeData {
-  claims: ITokenIssuerClaims;
+export interface IssuerDecodeData {
+  claims: IssuerClaims;
   keyId: string;
 }
 
-export interface ITokenIssuerVerifyOptions {
+export interface IssuerVerifyOptions {
   audience: string;
   clientId?: string;
   deviceId?: string;
@@ -63,7 +63,7 @@ export interface ITokenIssuerVerifyOptions {
   token: string;
 }
 
-export interface ITokenIssuerVerifyData<Payload> {
+export interface IssuerVerifyData<Payload> {
   id: string;
   authContextClass: string | null;
   authMethodsReference: Array<string> | null;

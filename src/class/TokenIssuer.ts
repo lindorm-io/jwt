@@ -17,14 +17,14 @@ import {
   InvalidTokenIssuerError,
 } from "../error";
 import {
-  ITokenIssuerClaims,
-  ITokenIssuerDecodeData,
-  ITokenIssuerOptions,
-  ITokenIssuerSignData,
-  ITokenIssuerSignOptions,
-  ITokenIssuerVerifyData,
-  ITokenIssuerVerifyOptions,
-  TExpiry,
+  Expiry,
+  IssuerClaims,
+  IssuerDecodeData,
+  IssuerOptions,
+  IssuerSignData,
+  IssuerSignOptions,
+  IssuerVerifyData,
+  IssuerVerifyOptions,
 } from "../typing";
 
 export class TokenIssuer {
@@ -32,13 +32,13 @@ export class TokenIssuer {
   private readonly keystore: Keystore;
   private readonly logger: Logger;
 
-  public constructor(options: ITokenIssuerOptions) {
+  public constructor(options: IssuerOptions) {
     this.issuer = options.issuer;
     this.keystore = options.keystore;
     this.logger = options.logger.createChildLogger("TokenIssuer");
   }
 
-  public sign<Payload extends Record<string, any>>(options: ITokenIssuerSignOptions<Payload>): ITokenIssuerSignData {
+  public sign<Payload extends Record<string, any>>(options: IssuerSignOptions<Payload>): IssuerSignData {
     this.logger.debug("signing token", options);
 
     const {
@@ -60,7 +60,7 @@ export class TokenIssuer {
     const expires = TokenIssuer.getExpiry(expiry);
     const expiresIn = expires - now;
 
-    const claims: ITokenIssuerClaims = {
+    const claims: IssuerClaims = {
       aud: audience,
       exp: expires,
       iat: now,
@@ -104,9 +104,7 @@ export class TokenIssuer {
     };
   }
 
-  public verify<Payload extends Record<string, any>>(
-    options: ITokenIssuerVerifyOptions,
-  ): ITokenIssuerVerifyData<Payload> {
+  public verify<Payload extends Record<string, any>>(options: IssuerVerifyOptions): IssuerVerifyData<Payload> {
     options.issuer = options.issuer || this.issuer;
 
     const { audience, clientId, deviceId, issuer, token } = options;
@@ -185,7 +183,7 @@ export class TokenIssuer {
     };
   }
 
-  public static decode(token: string): ITokenIssuerDecodeData {
+  public static decode(token: string): IssuerDecodeData {
     const {
       header: { kid: keyId },
       payload: claims,
@@ -202,7 +200,7 @@ export class TokenIssuer {
     return getUnixTime(date);
   }
 
-  private static getExpiry(expiry: TExpiry): number {
+  private static getExpiry(expiry: Expiry): number {
     if (isString(expiry)) {
       return TokenIssuer.dateToExpiry(add(Date.now(), stringToDurationObject(expiry)));
     }
