@@ -60,7 +60,7 @@ export class TokenIssuer {
     const expires = TokenIssuer.getExpiry(expiry);
     const expiresIn = expires - now;
 
-    const claims: ITokenIssuerClaims<Payload> = {
+    const claims: ITokenIssuerClaims = {
       aud: audience,
       exp: expires,
       iat: now,
@@ -74,7 +74,7 @@ export class TokenIssuer {
     if (authMethodsReference) claims.amr = authMethodsReference.join(" ");
     if (clientId) claims.client_id = clientId;
     if (deviceId) claims.device_id = deviceId;
-    if (payload) claims.payload = snakeKeys(payload) as Payload;
+    if (payload) claims.payload = snakeKeys<Payload, Record<string, any>>(payload);
     if (permission) claims.iam = permission;
     if (scope) claims.scope = scope.join(" ");
 
@@ -117,7 +117,7 @@ export class TokenIssuer {
       token: sanitiseToken(token),
     });
 
-    const { keyId, claims } = TokenIssuer.decode<Payload>(token);
+    const { keyId, claims } = TokenIssuer.decode(token);
 
     const key = this.keystore.getKey(keyId);
 
@@ -175,7 +175,7 @@ export class TokenIssuer {
       authMethodsReference: claims.amr ? claims.amr.split(" ") : null,
       clientId: claims.client_id || null,
       deviceId: claims.device_id || null,
-      payload: claims.payload ? (camelKeys(claims.payload) as Payload) : ({} as Payload),
+      payload: claims.payload ? camelKeys<Record<string, any>, Payload>(claims.payload) : ({} as Payload),
       permission: claims.iam || null,
       scope: claims.scope ? claims.scope.split(" ") : null,
       subject: claims.sub,
@@ -183,7 +183,7 @@ export class TokenIssuer {
     };
   }
 
-  public static decode<Payload>(token: string): ITokenIssuerDecodeData<Payload> {
+  public static decode(token: string): ITokenIssuerDecodeData {
     const {
       header: { kid: keyId },
       payload: claims,

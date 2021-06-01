@@ -22,10 +22,10 @@ export interface IDefaultClaims {
   sub: string;
 }
 
-export interface ITokenIssuerClaims<Payload> extends IDefaultClaims {
+export interface ITokenIssuerClaims extends IDefaultClaims {
   client_id?: string;
   device_id?: string;
-  payload?: Payload;
+  payload?: Record<string, any>;
   scope?: string;
 }
 
@@ -50,8 +50,8 @@ export interface ITokenIssuerSignData {
   token: string;
 }
 
-export interface ITokenIssuerDecodeData<Payload> {
-  claims: ITokenIssuerClaims<Payload>;
+export interface ITokenIssuerDecodeData {
+  claims: ITokenIssuerClaims;
   keyId: string;
 }
 

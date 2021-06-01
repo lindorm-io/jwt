@@ -11,7 +11,8 @@ describe("isValidScope", () => {
   });
 
   test("should resolve false when scope is empty", () => {
-    expect(isValidScope(null)).toBe(false);
+    const _scope: any = null;
+    expect(isValidScope(_scope)).toBe(false);
   });
 });
 
@@ -25,7 +26,8 @@ describe("isScope", () => {
   });
 
   test("should resolve false when scope is empty", () => {
-    expect(isScope(null, Scope.BIRTH_DATE)).toBe(false);
+    const _scope: any = null;
+    expect(isScope(_scope, Scope.BIRTH_DATE)).toBe(false);
   });
 
   test("should resolve only on specific scopes", () => {

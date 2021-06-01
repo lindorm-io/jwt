@@ -19,6 +19,7 @@ describe("sanitiseToken", () => {
   });
 
   test("should not try to sanitise if there is no input", () => {
-    expect(sanitiseToken(null)).toBe(null);
+    const _token: any = null;
+    expect(sanitiseToken(_token)).toBe(null);
   });
 });
