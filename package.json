@@ -40,7 +40,7 @@
     "validate": "npm run test:clear && npm run check:lint && npm run check:types && npm test"
   },
   "dependencies": {
-    "@lindorm-io/core": "^0.2.1",
+    "@lindorm-io/core": "^0.2.3",
     "@lindorm-io/errors": "0.0.1",
     "@lindorm-io/key-pair": "^0.2.6",
     "@lindorm-io/winston": "^0.1.5",
