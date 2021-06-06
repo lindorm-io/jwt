@@ -80,19 +80,15 @@ export class TokenIssuer {
 
     this.logger.debug("claims object created", claims);
 
-    const key = this.keystore.getCurrentKey();
+    const key = this.keystore.getSigningKey();
 
-    if (!key.privateKey) {
-      throw new Error("private key missing");
-    }
-
-    const privateKey =
-      key.type === KeyType.RSA ? { passphrase: key.passphrase || "", key: key.privateKey } : key.privateKey;
+    const privateKey = key.privateKey as string;
+    const signingKey = key.type === KeyType.RSA ? { passphrase: key.passphrase || "", key: privateKey } : privateKey;
     const keyInfo = { algorithm: key.preferredAlgorithm, keyid: key.id };
 
     this.logger.debug("using key from keystore", keyInfo);
 
-    const token = sign(claims, privateKey, keyInfo);
+    const token = sign(claims, signingKey, keyInfo);
 
     this.logger.debug("token signed", { token: sanitiseToken(token) });
 
