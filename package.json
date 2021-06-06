@@ -43,7 +43,7 @@
   "dependencies": {
     "@lindorm-io/core": "^0.2.4",
     "@lindorm-io/errors": "0.0.1",
-    "@lindorm-io/key-pair": "^0.2.7",
+    "@lindorm-io/key-pair": "^0.2.9",
     "@lindorm-io/winston": "^0.1.5",
     "date-fns": "^2.22.1",
     "jsonwebtoken": "^8.5.1",
