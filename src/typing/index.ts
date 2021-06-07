@@ -57,8 +57,8 @@ export interface IssuerDecodeData {
 
 export interface IssuerVerifyOptions {
   audience: string;
-  clientId?: string;
-  deviceId?: string;
+  clientId?: string | null;
+  deviceId?: string | null;
   issuer?: string;
   token: string;
 }

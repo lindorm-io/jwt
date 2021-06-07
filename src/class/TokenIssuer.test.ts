@@ -3,13 +3,7 @@ import { Keystore } from "@lindorm-io/key-pair";
 import { TokenIssuer } from "./TokenIssuer";
 import { baseParse } from "@lindorm-io/core";
 import { getTestKeyPairEC, getTestKeyPairRSA, logger } from "../test";
-import {
-  ExpiredTokenError,
-  InactiveTokenError,
-  InvalidTokenAudienceError,
-  InvalidTokenClientError,
-  InvalidTokenIssuerError,
-} from "../error";
+import { TokenError } from "../error";
 
 const parseTokenData = (token: string): any => JSON.parse(baseParse(token.split(".")[1]));
 
@@ -317,7 +311,7 @@ describe("TokenIssuer", () => {
         issuer,
         token,
       }),
-    ).toThrowError(expect.any(InvalidTokenAudienceError));
+    ).toThrow(TokenError);
   });
 
   test("should reject wrong client id", () => {
@@ -330,7 +324,7 @@ describe("TokenIssuer", () => {
         issuer,
         token,
       }),
-    ).toThrowError(expect.any(InvalidTokenClientError));
+    ).toThrow(TokenError);
   });
 
   test("should reject wrong issuer", () => {
@@ -343,7 +337,7 @@ describe("TokenIssuer", () => {
         issuer: "wrong-issuer",
         token,
       }),
-    ).toThrowError(expect.any(InvalidTokenIssuerError));
+    ).toThrow(TokenError);
   });
 
   test("should reject an expired token", () => {
@@ -358,7 +352,7 @@ describe("TokenIssuer", () => {
         issuer,
         token,
       }),
-    ).toThrowError(expect.any(ExpiredTokenError));
+    ).toThrow(TokenError);
   });
 
   test("should reject an inactive token", () => {
@@ -373,6 +367,6 @@ describe("TokenIssuer", () => {
         issuer,
         token,
       }),
-    ).toThrowError(expect.any(InactiveTokenError));
+    ).toThrow(TokenError);
   });
 });
