@@ -29,20 +29,21 @@ export class TokenIssuer {
     this.logger = options.logger.createChildLogger("TokenIssuer");
   }
 
-  public sign<Payload extends Record<string, any>>({
-    id = uuid(),
-    audience,
-    expiry,
-    subject,
+  public sign<Payload extends Record<string, any>>(options: IssuerSignOptions<Payload>): IssuerSignData {
+    const {
+      id = uuid(),
+      audience,
+      authContextClass,
+      authMethodsReference,
+      clientId,
+      deviceId,
+      expiry,
+      payload,
+      permission,
+      scope,
+      subject,
+    } = options;
 
-    authContextClass,
-    authMethodsReference,
-    clientId,
-    deviceId,
-    payload,
-    permission,
-    scope,
-  }: IssuerSignOptions<Payload>): IssuerSignData {
     this.logger.debug("signing token", { id, audience, expiry, subject });
 
     const now = TokenIssuer.dateToExpiry(new Date());
@@ -89,13 +90,9 @@ export class TokenIssuer {
     };
   }
 
-  public verify<Payload extends Record<string, any>>({
-    audience,
-    clientId,
-    deviceId,
-    issuer = this.issuer,
-    token,
-  }: IssuerVerifyOptions): IssuerVerifyData<Payload> {
+  public verify<Payload extends Record<string, any>>(options: IssuerVerifyOptions): IssuerVerifyData<Payload> {
+    const { audience, clientId, deviceId, issuer = this.issuer, token } = options;
+
     this.logger.debug("verifying token claims", {
       audience,
       clientId,
@@ -206,12 +203,12 @@ export class TokenIssuer {
     return { keyId, claims };
   }
 
-  public static expiryToDate(expiry: number): Date {
-    return new Date(expiry * 1000);
-  }
-
   public static dateToExpiry(date: Date): number {
     return getUnixTime(date);
+  }
+
+  public static expiryToDate(expiry: number): Date {
+    return new Date(expiry * 1000);
   }
 
   private static getExpiry(expiry: Expiry): number {

@@ -22,7 +22,7 @@ const {
   expires,
   level,
   token,
-} = issuer.sign({
+} = issuer.sign<Payload>({
   audience: "access",
   expiry: "5 minutes",
   subject: "account_id",
@@ -33,7 +33,7 @@ const {
   id,
   payload,
   subject,
-} = issuer.verify({
+} = issuer.verify<Payload>({
   audience: "access",
   token,
   issuer: "https://authentication.service/",
