@@ -7,7 +7,7 @@ import { TokenError } from "../error";
 
 const parseTokenData = (token: string): any => JSON.parse(baseParse(token.split(".")[1]));
 
-MockDate.set("2020-01-01T08:00:00.000Z");
+MockDate.set("2021-01-01T08:00:00.000Z");
 
 describe("TokenIssuer", () => {
   let clientId: any;
@@ -113,7 +113,7 @@ describe("TokenIssuer", () => {
 
   test("should create", () => {
     expect(handler.sign(options)).toStrictEqual({
-      expires: 1577865610,
+      expires: 1609488010,
       expiresIn: 10,
       id: expect.any(String),
       token: expect.any(String),
@@ -130,12 +130,12 @@ describe("TokenIssuer", () => {
         aud: "mock-audience",
         client_id: "mock-client-id",
         device_id: "mock-device-id",
-        exp: 1577865610,
+        exp: 1609488010,
         iam: "mock-permission",
-        iat: 1577865600,
+        iat: 1609488000,
         iss: "mock-issuer",
         jti: id,
-        nbf: 1577865600,
+        nbf: 1609488000,
         payload: {
           mock: "mock",
         },
@@ -256,9 +256,9 @@ describe("TokenIssuer", () => {
 
     expect(data).toStrictEqual(
       expect.objectContaining({
-        exp: 1577865610,
-        iat: 1577865600,
-        nbf: 1577865600,
+        exp: 1609488010,
+        iat: 1609488000,
+        nbf: 1609488000,
       }),
     );
   });
@@ -267,7 +267,7 @@ describe("TokenIssuer", () => {
     const { token } = handler.sign({
       id: "mock-id",
       audience: options.audience,
-      expiry: 1577865999,
+      expiry: 1609488010,
       subject: options.subject,
     });
 
@@ -275,9 +275,9 @@ describe("TokenIssuer", () => {
 
     expect(data).toStrictEqual(
       expect.objectContaining({
-        exp: 1577865999,
-        iat: 1577865600,
-        nbf: 1577865600,
+        exp: 1609488010,
+        iat: 1609488000,
+        nbf: 1609488000,
       }),
     );
   });
@@ -286,7 +286,7 @@ describe("TokenIssuer", () => {
     const { token } = handler.sign({
       id: "mock-id",
       audience: options.audience,
-      expiry: new Date("2020-12-12 12:00:00"),
+      expiry: new Date("2021-12-12 12:00:00"),
       subject: options.subject,
     });
 
@@ -294,9 +294,9 @@ describe("TokenIssuer", () => {
 
     expect(data).toStrictEqual(
       expect.objectContaining({
-        exp: 1607774400,
-        iat: 1577865600,
-        nbf: 1577865600,
+        exp: 1639310400,
+        iat: 1609488000,
+        nbf: 1609488000,
       }),
     );
   });
