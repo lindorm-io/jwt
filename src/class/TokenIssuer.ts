@@ -1,14 +1,12 @@
 import { Keystore, KeyType } from "@lindorm-io/key-pair";
 import { Logger } from "@lindorm-io/winston";
 import { TokenError } from "../error";
-import { add, getUnixTime, isBefore, isDate } from "date-fns";
-import { camelKeys, snakeKeys, stringComparison, stringToDurationObject } from "@lindorm-io/core";
+import { camelKeys, snakeKeys, stringComparison } from "@lindorm-io/core";
 import { decode, JsonWebTokenError, NotBeforeError, sign, TokenExpiredError, verify } from "jsonwebtoken";
-import { includes, isNumber, isString } from "lodash";
-import { sanitiseToken } from "../util";
+import { includes } from "lodash";
+import { getExpiry, sanitiseToken } from "../util";
 import { v4 as uuid } from "uuid";
 import {
-  Expiry,
   IssuerClaims,
   IssuerDecodeData,
   IssuerOptions,
@@ -17,6 +15,7 @@ import {
   IssuerVerifyData,
   IssuerVerifyOptions,
 } from "../typing";
+import { getUnixTime } from "date-fns";
 
 export class TokenIssuer {
   private readonly issuer: string;
@@ -37,18 +36,18 @@ export class TokenIssuer {
       authMethodsReference,
       clientId,
       deviceId,
-      expiry,
       payload,
       permission,
       scope,
       subject,
     } = options;
 
-    this.logger.debug("signing token", { id, audience, expiry, subject });
-
-    const now = TokenIssuer.dateToExpiry(new Date());
-    const expires = TokenIssuer.getExpiry(expiry);
+    const now = getUnixTime(options.now || new Date());
+    const expires = getExpiry(options.expiry);
+    const notBefore = getUnixTime(options.notBefore || new Date());
     const expiresIn = expires - now;
+
+    this.logger.debug("signing token", { id, audience, expires, notBefore, now, subject });
 
     const claims: IssuerClaims = {
       aud: audience,
@@ -56,7 +55,7 @@ export class TokenIssuer {
       iat: now,
       iss: this.issuer,
       jti: id,
-      nbf: now,
+      nbf: notBefore,
       sub: subject,
     };
 
@@ -114,7 +113,7 @@ export class TokenIssuer {
       verify(token, key.publicKey, {
         algorithms: key.algorithms,
         audience,
-        clockTimestamp: TokenIssuer.dateToExpiry(new Date()),
+        clockTimestamp: getUnixTime(new Date()),
         issuer,
       });
 
@@ -201,37 +200,5 @@ export class TokenIssuer {
     }: any = decode(token, { complete: true });
 
     return { keyId, claims };
-  }
-
-  public static dateToExpiry(date: Date): number {
-    return getUnixTime(date);
-  }
-
-  public static expiryToDate(expiry: number): Date {
-    return new Date(expiry * 1000);
-  }
-
-  private static getExpiry(expiry: Expiry): number {
-    if (isString(expiry)) {
-      return TokenIssuer.dateToExpiry(add(Date.now(), stringToDurationObject(expiry)));
-    }
-
-    if (isNumber(expiry)) {
-      if (isBefore(TokenIssuer.expiryToDate(expiry), new Date())) {
-        throw new Error("Invalid token expiry input");
-      }
-
-      return expiry;
-    }
-
-    if (isDate(expiry)) {
-      if (isBefore(expiry, new Date())) {
-        throw new Error("Invalid token expiry input");
-      }
-
-      return TokenIssuer.dateToExpiry(expiry);
-    }
-
-    throw new Error("Invalid token expiry input");
   }
 }

@@ -37,6 +37,8 @@ export interface IssuerSignOptions<Payload> {
   clientId?: string;
   deviceId?: string;
   expiry: Expiry;
+  notBefore?: Date;
+  now?: Date;
   payload?: Payload;
   permission?: string;
   scope?: Array<string>;

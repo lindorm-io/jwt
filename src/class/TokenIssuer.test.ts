@@ -341,24 +341,14 @@ describe("TokenIssuer", () => {
   });
 
   test("should reject an expired token", () => {
-    jest.spyOn(global.Date, "now").mockImplementationOnce(() => new Date("1999-01-01T01:01:01.000Z").valueOf());
+    const { token } = handler.sign({
+      ...options,
+      now: new Date("2021-01-01T08:00:00.000Z"),
+      notBefore: new Date("2021-01-01T08:00:00.000Z"),
+      expiry: new Date("2021-01-01T08:10:00.000Z"),
+    });
 
-    const { token } = handler.sign(options);
-
-    expect(() =>
-      handler.verify({
-        audience: options.audience,
-        clientId,
-        issuer,
-        token,
-      }),
-    ).toThrow(TokenError);
-  });
-
-  test("should reject an inactive token", () => {
-    const { token } = handler.sign(options);
-
-    jest.spyOn(TokenIssuer, "dateToExpiry").mockImplementationOnce(() => 123456789);
+    MockDate.set("2022-01-01T08:10:00.000Z");
 
     expect(() =>
       handler.verify({
@@ -368,5 +358,7 @@ describe("TokenIssuer", () => {
         token,
       }),
     ).toThrow(TokenError);
+
+    MockDate.set("2021-01-01T08:00:00.000Z");
   });
 });
