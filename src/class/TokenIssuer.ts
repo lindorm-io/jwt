@@ -7,6 +7,7 @@ import { includes } from "lodash";
 import { getExpiry, sanitiseToken } from "../util";
 import { v4 as uuid } from "uuid";
 import {
+  Expiry,
   IssuerClaims,
   IssuerDecodeData,
   IssuerOptions,
@@ -200,5 +201,13 @@ export class TokenIssuer {
     }: any = decode(token, { complete: true });
 
     return { keyId, claims };
+  }
+
+  public static getExpiry(expiry: Expiry): number {
+    return getExpiry(expiry);
+  }
+
+  public static sanitiseToken(token: string): string {
+    return sanitiseToken(token);
   }
 }
