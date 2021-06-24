@@ -1,11 +1,11 @@
 import { Keystore, KeyType } from "@lindorm-io/key-pair";
 import { Logger } from "@lindorm-io/winston";
 import { TokenError } from "../error";
-import { camelKeys, snakeKeys, stringComparison } from "@lindorm-io/core";
+import { camelKeys, snakeKeys, sortObjectKeys, stringComparison } from "@lindorm-io/core";
 import { decode, sign, verify } from "jsonwebtoken";
 import { getExpiryDate, sanitiseToken } from "../util";
 import { getUnixTime } from "date-fns";
-import { includes, isString } from "lodash";
+import { includes, isArray, isString } from "lodash";
 import { v4 as uuid } from "uuid";
 import {
   Expiry,
@@ -40,16 +40,15 @@ export class TokenIssuer {
     this.logger.debug("signing token", options);
 
     const claims: IssuerClaims = {
-      aud: isString(options.audience) ? [options.audience] : options.audience,
       exp: expires,
       iat: now,
       iss: this.issuer,
       jti: id,
       nbf: notBefore,
-      sub: options.subject,
       token_type: options.type,
     };
 
+    if (options.audience) claims.aud = isString(options.audience) ? [options.audience] : options.audience;
     if (options.authContextClass) claims.acr = options.authContextClass;
     if (options.authMethodsReference) claims.amr = options.authMethodsReference.join(" ");
     if (options.clientId) claims.client_id = options.clientId;
@@ -58,6 +57,7 @@ export class TokenIssuer {
     if (options.payload) claims.payload = snakeKeys<Payload, Record<string, any>>(options.payload);
     if (options.permission) claims.iam = options.permission;
     if (options.scope) claims.scope = options.scope.join(" ");
+    if (options.subject) claims.sub = options.subject;
     if (options.username) claims.username = options.username;
 
     this.logger.debug("claims object created", claims);
@@ -70,7 +70,7 @@ export class TokenIssuer {
 
     this.logger.debug("using key from keystore", keyInfo);
 
-    const token = sign(claims, signingKey, keyInfo);
+    const token = sign(sortObjectKeys(claims), signingKey, keyInfo);
 
     this.logger.debug("token signed", { token: sanitiseToken(token) });
 
@@ -134,7 +134,7 @@ export class TokenIssuer {
       });
     }
 
-    if (options.scope) {
+    if (isArray(options.scope)) {
       if (!claims.scope?.length) {
         throw new TokenError("Invalid token", {
           debug: {
@@ -173,7 +173,7 @@ export class TokenIssuer {
 
     return {
       id: claims.jti,
-      audience: claims.aud,
+      audience: claims.aud || [],
       authContextClass: claims.acr || null,
       authMethodsReference: claims.amr ? claims.amr.split(" ") : null,
       clientId: claims.client_id || null,
@@ -182,7 +182,7 @@ export class TokenIssuer {
       payload: claims.payload ? camelKeys<Record<string, any>, Payload>(claims.payload) : ({} as Payload),
       permission: claims.iam || null,
       scope: claims.scope ? claims.scope.split(" ") : null,
-      subject: claims.sub,
+      subject: claims.sub || null,
       token,
       type: claims.token_type,
       username: claims.username || null,

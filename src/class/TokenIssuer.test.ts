@@ -183,15 +183,13 @@ describe("TokenIssuer", () => {
 
   test("should return default values", () => {
     const { id, token } = handler.sign({
-      audience: ["audience"],
       expiry: "10 seconds",
-      subject: "subject",
       type: "type",
     });
 
     expect(handler.verify(token)).toStrictEqual({
       id: id,
-      audience: ["audience"],
+      audience: [],
       authContextClass: null,
       authMethodsReference: null,
       clientId: null,
@@ -200,7 +198,7 @@ describe("TokenIssuer", () => {
       payload: {},
       permission: null,
       scope: null,
-      subject: "subject",
+      subject: null,
       token: token,
       type: "type",
       username: null,

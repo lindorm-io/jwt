@@ -12,14 +12,14 @@ export interface IssuerOptions {
 export interface DefaultClaims {
   acr?: string;
   amr?: string;
-  aud: Array<string>;
+  aud?: Array<string>;
   exp: number;
   iam?: string;
   iat: number;
   iss: string;
   jti: string;
   nbf: number;
-  sub: string;
+  sub?: string;
 }
 
 export interface IssuerClaims extends DefaultClaims {
@@ -34,7 +34,7 @@ export interface IssuerClaims extends DefaultClaims {
 
 export interface IssuerSignOptions<Payload> {
   id?: string;
-  audience: string | Array<string>;
+  audience?: string | Array<string>;
   authContextClass?: string;
   authMethodsReference?: Array<string>;
   clientId?: string;
@@ -45,7 +45,7 @@ export interface IssuerSignOptions<Payload> {
   payload?: Payload;
   permission?: string;
   scope?: Array<string>;
-  subject: string;
+  subject?: string;
   type: string;
   username?: string;
 }
@@ -85,7 +85,7 @@ export interface IssuerVerifyData<Payload> {
   payload: Payload;
   permission: string | null;
   scope: Array<string> | null;
-  subject: string;
+  subject: string | null;
   token: string;
   type: string;
   username: string | null;
