@@ -2,9 +2,9 @@ import { Keystore, KeyType } from "@lindorm-io/key-pair";
 import { Logger } from "@lindorm-io/winston";
 import { TokenError } from "../error";
 import { camelKeys, snakeKeys, stringComparison } from "@lindorm-io/core";
-import { decode, JsonWebTokenError, NotBeforeError, sign, TokenExpiredError, verify } from "jsonwebtoken";
-import { includes } from "lodash";
-import { getExpiry, sanitiseToken } from "../util";
+import { decode, sign, verify } from "jsonwebtoken";
+import { getExpiryDate, sanitiseToken } from "../util";
+import { getUnixTime } from "date-fns";
 import { v4 as uuid } from "uuid";
 import {
   Expiry,
@@ -16,7 +16,6 @@ import {
   IssuerVerifyData,
   IssuerVerifyOptions,
 } from "../typing";
-import { getUnixTime } from "date-fns";
 
 export class TokenIssuer {
   private readonly issuer: string;
@@ -30,43 +29,35 @@ export class TokenIssuer {
   }
 
   public sign<Payload extends Record<string, any>>(options: IssuerSignOptions<Payload>): IssuerSignData {
-    const {
-      id = uuid(),
-      audience,
-      authContextClass,
-      authMethodsReference,
-      clientId,
-      deviceId,
-      payload,
-      permission,
-      scope,
-      subject,
-    } = options;
-
-    const now = getUnixTime(options.now || new Date());
-    const expires = getExpiry(options.expiry);
-    const notBefore = getUnixTime(options.notBefore || new Date());
+    const id = options.id || uuid();
+    const date = new Date();
+    const now = getUnixTime(date);
+    const expires = getUnixTime(getExpiryDate(options.expiry));
+    const notBefore = getUnixTime(options.notBefore || date);
     const expiresIn = expires - now;
 
-    this.logger.debug("signing token", { id, audience, expires, notBefore, now, subject });
+    this.logger.debug("signing token", options);
 
     const claims: IssuerClaims = {
-      aud: audience,
+      aud: options.audience,
       exp: expires,
       iat: now,
       iss: this.issuer,
       jti: id,
       nbf: notBefore,
-      sub: subject,
+      sub: options.subject,
+      token_type: options.type,
     };
 
-    if (authContextClass) claims.acr = authContextClass;
-    if (authMethodsReference) claims.amr = authMethodsReference.join(" ");
-    if (clientId) claims.client_id = clientId;
-    if (deviceId) claims.device_id = deviceId;
-    if (payload) claims.payload = snakeKeys<Payload, Record<string, any>>(payload);
-    if (permission) claims.iam = permission;
-    if (scope) claims.scope = scope.join(" ");
+    if (options.authContextClass) claims.acr = options.authContextClass;
+    if (options.authMethodsReference) claims.amr = options.authMethodsReference.join(" ");
+    if (options.clientId) claims.client_id = options.clientId;
+    if (options.deviceId) claims.device_id = options.deviceId;
+    if (options.nonce) claims.nonce = options.nonce;
+    if (options.payload) claims.payload = snakeKeys<Payload, Record<string, any>>(options.payload);
+    if (options.permission) claims.iam = options.permission;
+    if (options.scope) claims.scope = options.scope.join(" ");
+    if (options.username) claims.username = options.username;
 
     this.logger.debug("claims object created", claims);
 
@@ -84,21 +75,19 @@ export class TokenIssuer {
 
     return {
       id,
-      expires,
+      expires: getExpiryDate(options.expiry),
       expiresIn,
       token,
     };
   }
 
-  public verify<Payload extends Record<string, any>>(options: IssuerVerifyOptions): IssuerVerifyData<Payload> {
-    const { audience, clientId, deviceId, issuer = this.issuer, token } = options;
-
+  public verify<Payload extends Record<string, any>>(
+    token: string,
+    options: Partial<IssuerVerifyOptions> = {},
+  ): IssuerVerifyData<Payload> {
     this.logger.debug("verifying token claims", {
-      audience,
-      clientId,
-      deviceId,
-      issuer,
       token: sanitiseToken(token),
+      ...options,
     });
 
     const { keyId, claims } = TokenIssuer.decode(token);
@@ -113,84 +102,64 @@ export class TokenIssuer {
     try {
       verify(token, key.publicKey, {
         algorithms: key.algorithms,
-        audience,
+        audience: options.audience,
         clockTimestamp: getUnixTime(new Date()),
-        issuer,
+        issuer: options.issuer || this.issuer,
+        maxAge: options.maxAge,
+        nonce: options.nonce,
+        subject: options.subject,
       });
-
-      if (clientId && claims.client_id && !stringComparison(clientId, claims.client_id)) {
-        throw new TokenError("Invalid token", {
-          debug: {
-            expect: clientId,
-            actual: claims.client_id,
-          },
-          description: "Invalid client ID",
-        });
-      }
-
-      if (deviceId && claims.device_id && !stringComparison(deviceId, claims.device_id)) {
-        throw new TokenError("Invalid token", {
-          debug: {
-            expect: deviceId,
-            actual: claims.device_id,
-          },
-          description: "Invalid device ID",
-        });
-      }
     } catch (err) {
-      this.logger.error("error verifying token", err);
-
-      if (err instanceof TokenExpiredError) {
-        throw new TokenError("Invalid token", {
-          error: err,
-          description: "Token is expired",
-        });
-      }
-
-      if (err instanceof NotBeforeError) {
-        throw new TokenError("Invalid token", {
-          error: err,
-          description: "Token is not allowed to be used yet",
-        });
-      }
-
-      if (includes(err.message, "jwt audience invalid")) {
-        throw new TokenError("Invalid token", {
-          error: err,
-          description: "Token audience is invalid",
-        });
-      }
-
-      if (includes(err.message, "jwt issuer invalid")) {
-        throw new TokenError("Invalid token", {
-          error: err,
-          description: "Token issuer is invalid",
-        });
-      }
-
-      if (err instanceof JsonWebTokenError) {
-        throw new TokenError("Invalid token", {
-          error: err,
-          description: "Unable to decode token",
-        });
-      }
-
       throw new TokenError("Invalid token", { error: err });
+    }
+
+    if (options.clientId && claims.client_id && !stringComparison(options.clientId, claims.client_id)) {
+      throw new TokenError("Invalid token", {
+        debug: {
+          expect: options.clientId,
+          actual: claims.client_id,
+        },
+        description: "Invalid client identifier",
+      });
+    }
+
+    if (options.deviceId && claims.device_id && !stringComparison(options.deviceId, claims.device_id)) {
+      throw new TokenError("Invalid token", {
+        debug: {
+          expect: options.deviceId,
+          actual: claims.device_id,
+        },
+        description: "Invalid device identifier",
+      });
+    }
+
+    if (options.type && claims.token_type && !stringComparison(options.type, claims.token_type)) {
+      throw new TokenError("Invalid token", {
+        debug: {
+          expect: options.type,
+          actual: claims.token_type,
+        },
+        description: "Invalid token type",
+      });
     }
 
     this.logger.debug("token verified", { token: sanitiseToken(token) });
 
     return {
       id: claims.jti,
+      audience: claims.aud,
       authContextClass: claims.acr || null,
       authMethodsReference: claims.amr ? claims.amr.split(" ") : null,
       clientId: claims.client_id || null,
       deviceId: claims.device_id || null,
+      nonce: claims.nonce || null,
       payload: claims.payload ? camelKeys<Record<string, any>, Payload>(claims.payload) : ({} as Payload),
       permission: claims.iam || null,
       scope: claims.scope ? claims.scope.split(" ") : null,
       subject: claims.sub,
       token,
+      type: claims.token_type,
+      username: claims.username || null,
     };
   }
 
@@ -204,7 +173,15 @@ export class TokenIssuer {
   }
 
   public static getExpiry(expiry: Expiry): number {
-    return getExpiry(expiry);
+    return getUnixTime(getExpiryDate(expiry));
+  }
+
+  public static getExpiryDate(expiry: Expiry): Date {
+    return getExpiryDate(expiry);
+  }
+
+  public static getUnixTime(date: Date): number {
+    return getUnixTime(date);
   }
 
   public static sanitiseToken(token: string): string {

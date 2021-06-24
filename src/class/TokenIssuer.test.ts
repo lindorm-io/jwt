@@ -11,25 +11,29 @@ MockDate.set("2021-01-01T08:00:00.000Z");
 
 describe("TokenIssuer", () => {
   let clientId: any;
-  let issuer: any;
   let handler: TokenIssuer;
+  let issuer: any;
   let options: any;
 
   beforeEach(() => {
-    clientId = "mock-client-id";
-    issuer = "mock-issuer";
+    clientId = "d7f8a289-dc1b-41eb-ae97-56eb1c2a1c84";
+    issuer = "issuer";
     options = {
       id: "d2457602-63bd-48c5-a19f-bfd81bf870c0",
-      audience: "mock-audience",
-      authContextClass: "mock-acr",
-      authMethodsReference: ["mock-amr"],
-      clientId: "mock-client-id",
-      deviceId: "mock-device-id",
+      audience: ["audience"],
+      authContextClass: "acr",
+      authMethodsReference: ["amr"],
+      clientId: "d7f8a289-dc1b-41eb-ae97-56eb1c2a1c84",
+      deviceId: "6f08189c-56d1-468c-892b-ba0ae1d83e0f",
       expiry: "10 seconds",
+      nonce: "bed190d568a5456bb15a39cf71d72022",
+      notBefore: new Date(),
       payload: { mock: "mock" },
-      permission: "mock-permission",
-      scope: ["mock-scope"],
-      subject: "mock-subject",
+      permission: "permission",
+      scope: ["scope"],
+      subject: "subject",
+      type: "type",
+      username: "username",
     };
 
     handler = new TokenIssuer({
@@ -39,9 +43,7 @@ describe("TokenIssuer", () => {
     });
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  afterEach(jest.clearAllMocks);
 
   describe("RS512", () => {
     beforeEach(() => {
@@ -55,24 +57,21 @@ describe("TokenIssuer", () => {
     test("should sign/verify", () => {
       const { id, token } = handler.sign(options);
 
-      expect(
-        handler.verify({
-          audience: options.audience,
-          clientId,
-          issuer,
-          token,
-        }),
-      ).toStrictEqual({
-        id: id,
-        authContextClass: options.authContextClass,
-        authMethodsReference: options.authMethodsReference,
-        clientId: options.clientId,
-        deviceId: options.deviceId,
-        payload: options.payload,
-        permission: options.permission,
-        scope: options.scope,
-        subject: options.subject,
-        token: token,
+      expect(handler.verify(token)).toStrictEqual({
+        id,
+        audience: ["audience"],
+        authContextClass: "acr",
+        authMethodsReference: ["amr"],
+        clientId: "d7f8a289-dc1b-41eb-ae97-56eb1c2a1c84",
+        deviceId: "6f08189c-56d1-468c-892b-ba0ae1d83e0f",
+        nonce: "bed190d568a5456bb15a39cf71d72022",
+        payload: { mock: "mock" },
+        permission: "permission",
+        scope: ["scope"],
+        subject: "subject",
+        token: expect.any(String),
+        type: "type",
+        username: "username",
       });
     });
   });
@@ -89,33 +88,30 @@ describe("TokenIssuer", () => {
     test("should sign/verify", () => {
       const { id, token } = handler.sign(options);
 
-      expect(
-        handler.verify({
-          audience: options.audience,
-          clientId,
-          issuer,
-          token,
-        }),
-      ).toStrictEqual({
-        id: id,
-        authContextClass: options.authContextClass,
-        authMethodsReference: options.authMethodsReference,
-        clientId: options.clientId,
-        deviceId: options.deviceId,
-        payload: options.payload,
-        permission: options.permission,
-        scope: options.scope,
-        subject: options.subject,
-        token: token,
+      expect(handler.verify(token)).toStrictEqual({
+        id,
+        audience: ["audience"],
+        authContextClass: "acr",
+        authMethodsReference: ["amr"],
+        clientId: "d7f8a289-dc1b-41eb-ae97-56eb1c2a1c84",
+        deviceId: "6f08189c-56d1-468c-892b-ba0ae1d83e0f",
+        nonce: "bed190d568a5456bb15a39cf71d72022",
+        payload: { mock: "mock" },
+        permission: "permission",
+        scope: ["scope"],
+        subject: "subject",
+        token: expect.any(String),
+        type: "type",
+        username: "username",
       });
     });
   });
 
   test("should create", () => {
     expect(handler.sign(options)).toStrictEqual({
-      expires: 1609488010,
-      expiresIn: 10,
       id: expect.any(String),
+      expires: expect.any(Date),
+      expiresIn: 10,
       token: expect.any(String),
     });
   });
@@ -125,24 +121,27 @@ describe("TokenIssuer", () => {
 
     expect(TokenIssuer.decode(token)).toStrictEqual({
       claims: {
-        acr: "mock-acr",
-        amr: "mock-amr",
-        aud: "mock-audience",
-        client_id: "mock-client-id",
-        device_id: "mock-device-id",
+        acr: "acr",
+        amr: "amr",
+        aud: ["audience"],
+        client_id: "d7f8a289-dc1b-41eb-ae97-56eb1c2a1c84",
+        device_id: "6f08189c-56d1-468c-892b-ba0ae1d83e0f",
         exp: 1609488010,
-        iam: "mock-permission",
+        iam: "permission",
         iat: 1609488000,
-        iss: "mock-issuer",
+        iss: "issuer",
         jti: id,
+        token_type: "type",
         nbf: 1609488000,
+        nonce: "bed190d568a5456bb15a39cf71d72022",
         payload: {
           mock: "mock",
         },
-        scope: "mock-scope",
-        sub: "mock-subject",
+        scope: "scope",
+        sub: "subject",
+        username: "username",
       },
-      keyId: expect.any(String),
+      keyId: "7531da89-12e9-403e-925a-5da49100635c",
     });
   });
 
@@ -150,50 +149,54 @@ describe("TokenIssuer", () => {
     const { id, token } = handler.sign(options);
 
     expect(
-      handler.verify({
+      handler.verify(token, {
         audience: options.audience,
         clientId,
+        deviceId: options.deviceId,
+        nonce: options.nonce,
         issuer,
-        token,
       }),
     ).toStrictEqual({
-      id: id,
-      authContextClass: options.authContextClass,
-      authMethodsReference: options.authMethodsReference,
-      clientId: options.clientId,
-      deviceId: options.deviceId,
-      payload: options.payload,
-      permission: options.permission,
-      scope: options.scope,
-      subject: options.subject,
-      token: token,
+      id,
+      audience: ["audience"],
+      authContextClass: "acr",
+      authMethodsReference: ["amr"],
+      clientId: "d7f8a289-dc1b-41eb-ae97-56eb1c2a1c84",
+      deviceId: "6f08189c-56d1-468c-892b-ba0ae1d83e0f",
+      nonce: "bed190d568a5456bb15a39cf71d72022",
+      payload: { mock: "mock" },
+      permission: "permission",
+      scope: ["scope"],
+      subject: "subject",
+      token: expect.any(String),
+      type: "type",
+      username: "username",
     });
   });
 
   test("should return default values", () => {
     const { id, token } = handler.sign({
-      audience: "mock-audience",
+      audience: ["audience"],
       expiry: "10 seconds",
-      subject: "mock-subject",
+      subject: "subject",
+      type: "type",
     });
 
-    expect(
-      handler.verify({
-        audience: options.audience,
-        issuer,
-        token,
-      }),
-    ).toStrictEqual({
+    expect(handler.verify(token)).toStrictEqual({
       id: id,
+      audience: ["audience"],
       authContextClass: null,
       authMethodsReference: null,
       clientId: null,
       deviceId: null,
+      nonce: null,
       payload: {},
       permission: null,
       scope: null,
-      subject: "mock-subject",
+      subject: "subject",
       token: token,
+      type: "type",
+      username: null,
     });
   });
 
@@ -209,6 +212,7 @@ describe("TokenIssuer", () => {
         case_four: ["array", "data"],
         caseFive: true,
       },
+      type: "type",
     });
 
     const data = parseTokenData(token);
@@ -225,13 +229,7 @@ describe("TokenIssuer", () => {
       }),
     );
 
-    expect(
-      handler.verify({
-        audience: options.audience,
-        issuer,
-        token,
-      }),
-    ).toStrictEqual(
+    expect(handler.verify(token)).toStrictEqual(
       expect.objectContaining({
         payload: {
           caseFive: true,
@@ -246,10 +244,10 @@ describe("TokenIssuer", () => {
 
   test("should accept string as expiry", () => {
     const { token } = handler.sign({
-      id: "mock-id",
       audience: options.audience,
       expiry: "10 seconds",
       subject: options.subject,
+      type: "type",
     });
 
     const data = parseTokenData(token);
@@ -265,10 +263,10 @@ describe("TokenIssuer", () => {
 
   test("should accept number as expiry", () => {
     const { token } = handler.sign({
-      id: "mock-id",
       audience: options.audience,
       expiry: 1609488010,
       subject: options.subject,
+      type: "type",
     });
 
     const data = parseTokenData(token);
@@ -284,10 +282,10 @@ describe("TokenIssuer", () => {
 
   test("should accept Date as expiry", () => {
     const { token } = handler.sign({
-      id: "mock-id",
       audience: options.audience,
       expiry: new Date("2021-12-12 12:00:00"),
       subject: options.subject,
+      type: "type",
     });
 
     const data = parseTokenData(token);
@@ -301,63 +299,59 @@ describe("TokenIssuer", () => {
     );
   });
 
-  test("should reject wrong audience", () => {
+  test("should reject invalid client id", () => {
     const { token } = handler.sign(options);
 
     expect(() =>
-      handler.verify({
-        audience: "wrong audience",
-        clientId,
-        issuer,
-        token,
+      handler.verify(token, {
+        clientId: "434c382e-bc9c-4dca-8672-55a7b9026250",
       }),
     ).toThrow(TokenError);
   });
 
-  test("should reject wrong client id", () => {
+  test("should reject invalid device id", () => {
     const { token } = handler.sign(options);
 
     expect(() =>
-      handler.verify({
-        audience: options.audience,
-        clientId: "wrong-client-id",
-        issuer,
-        token,
+      handler.verify(token, {
+        deviceId: "434c382e-bc9c-4dca-8672-55a7b9026250",
       }),
     ).toThrow(TokenError);
   });
 
-  test("should reject wrong issuer", () => {
+  test("should reject invalid type", () => {
     const { token } = handler.sign(options);
 
     expect(() =>
-      handler.verify({
-        audience: options.audience,
-        clientId,
-        issuer: "wrong-issuer",
-        token,
+      handler.verify(token, {
+        type: "wrong-type",
       }),
     ).toThrow(TokenError);
   });
 
-  test("should reject an expired token", () => {
+  test("should reject expired", () => {
     const { token } = handler.sign({
       ...options,
-      now: new Date("2021-01-01T08:00:00.000Z"),
-      notBefore: new Date("2021-01-01T08:00:00.000Z"),
       expiry: new Date("2021-01-01T08:10:00.000Z"),
     });
 
     MockDate.set("2022-01-01T08:10:00.000Z");
 
-    expect(() =>
-      handler.verify({
-        audience: options.audience,
-        clientId,
-        issuer,
-        token,
-      }),
-    ).toThrow(TokenError);
+    expect(() => handler.verify(token)).toThrow(TokenError);
+
+    MockDate.set("2021-01-01T08:00:00.000Z");
+  });
+
+  test("should reject token not yet valid", () => {
+    const { token } = handler.sign({
+      ...options,
+      notBefore: new Date("2021-01-01T09:00:00.000Z"),
+      expiry: new Date("2021-01-01T10:00:00.000Z"),
+    });
+
+    MockDate.set("2022-01-01T08:30:00.000Z");
+
+    expect(() => handler.verify(token)).toThrow(TokenError);
 
     MockDate.set("2021-01-01T08:00:00.000Z");
   });

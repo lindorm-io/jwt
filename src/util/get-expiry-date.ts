@@ -1,6 +1,6 @@
 import { DateError } from "../error";
 import { Expiry } from "../typing";
-import { add, getUnixTime, isBefore, isDate } from "date-fns";
+import { add, isBefore, isDate } from "date-fns";
 import { isNumber, isString } from "lodash";
 import { stringToDurationObject } from "@lindorm-io/core";
 
@@ -51,10 +51,10 @@ const convertExpiryToDate = (expiry: Expiry): Date => {
   });
 };
 
-export const getExpiry = (expiry: Expiry): number => {
+export const getExpiryDate = (expiry: Expiry): Date => {
   const date = convertExpiryToDate(expiry);
 
   assertExpiryDate(date);
 
-  return getUnixTime(date);
+  return date;
 };

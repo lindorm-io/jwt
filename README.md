@@ -15,39 +15,83 @@ const issuer = new TokenIssuer({
   keystore: keyPairKeyStore,
   logger: winstonLogger,
 });
+```
 
+#### Sign
+```typescript
 const {
   id: tokenId,
   expiresIn,
   expires,
-  level,
   token,
 } = issuer.sign<Payload>({
-  audience: "access",
-  expiry: "5 minutes",
-  subject: "account_id",
-  payload: { withData: "data" },
+  id,
+  audience,
+  authContextClass,
+  authMethodsReference,
+  clientId,
+  deviceId,
+  expiry,
+  nonce,
+  notBefore,
+  payload,
+  permission,
+  scope,
+  subject,
+  type,
+  username,
 });
+```
 
+#### Verify
+```typescript
 const {
   id,
+  audience,
+  authContextClass,
+  authMethodsReference,
+  clientId,
+  deviceId,
+  nonce,
   payload,
+  permission,
+  scope,
   subject,
-} = issuer.verify<Payload>({
-  audience: "access",
   token,
-  issuer: "https://authentication.service/",
+  type,
+  username,
+} = issuer.verify<Payload>(token, {
+  audience,
+  clientId,
+  deviceId,
+  issuer,
+  nonce,
+  subject,
+  maxAge,
+  type,
 });
+```
 
-TokenIssuer.dateToExpiry(new Date("2020-01-01T08:00:00.000Z")) // -> 1577865600
-TokenIssuer.expiryToDate(1577865600) // -> new Date("2020-01-01T08:00:00.000Z")
+#### Decode
+```typescript
+const {
+  keyId,
+  claims,
+} = TokenIssuer.decode(token);
+```
 
+#### Expiry
+```typescript
 TokenIssuer.getExpiry("10 seconds") // -> 1577865610
 TokenIssuer.getExpiry(20) // -> 1577865610
 TokenIssuer.getExpiry(new Date("2020-01-01T08:00:00.000Z")) // -> 1577865600
+
+TokenIssuer.getUnixTime(new Date("2020-01-01T08:00:00.000Z")) // -> 1577865600
+
+TokenIssuer.getExpiryDate(1577865600) // -> new Date("2020-01-01T08:00:00.000Z")
 ```
 
-### Token Sanitiser
+#### Sanitiser
 ```typescript
-sanitiseToken(token) // -> <base64-header>.<base64-body>
+TokenIssuer.sanitiseToken(token) // -> <base64-header>.<base64-body>
 ```

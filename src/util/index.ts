@@ -1,2 +1,2 @@
-export * from "./get-expiry";
+export * from "./get-expiry-date";
 export * from "./sanitise-token";

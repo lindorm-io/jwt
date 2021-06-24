@@ -4,6 +4,7 @@
 /data
 /node_modules
 /src
+/test
 /tmp
 
 .env
@@ -18,6 +19,7 @@
 .prettierrc
 Thumbs.db
 
+jest.config.integration.js
 jest.config.js
 jest.global.setup.js
 nodemon.json
