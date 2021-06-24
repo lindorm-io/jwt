@@ -5,6 +5,7 @@ import { camelKeys, snakeKeys, stringComparison } from "@lindorm-io/core";
 import { decode, sign, verify } from "jsonwebtoken";
 import { getExpiryDate, sanitiseToken } from "../util";
 import { getUnixTime } from "date-fns";
+import { includes, isString } from "lodash";
 import { v4 as uuid } from "uuid";
 import {
   Expiry,
@@ -39,7 +40,7 @@ export class TokenIssuer {
     this.logger.debug("signing token", options);
 
     const claims: IssuerClaims = {
-      aud: options.audience,
+      aud: isString(options.audience) ? [options.audience] : options.audience,
       exp: expires,
       iat: now,
       iss: this.issuer,
@@ -131,6 +132,31 @@ export class TokenIssuer {
         },
         description: "Invalid device identifier",
       });
+    }
+
+    if (options.scope) {
+      if (!claims.scope?.length) {
+        throw new TokenError("Invalid token", {
+          debug: {
+            expect: options.scope,
+            actual: claims.scope,
+          },
+          description: "Scope claim not found on token",
+        });
+      }
+
+      for (const scope of options.scope) {
+        if (includes(claims.scope, scope)) continue;
+
+        throw new TokenError("Invalid token", {
+          data: { scope },
+          debug: {
+            expect: options.scope,
+            actual: claims.scope,
+          },
+          description: "Expected scope not found",
+        });
+      }
     }
 
     if (options.type && claims.token_type && !stringComparison(options.type, claims.token_type)) {

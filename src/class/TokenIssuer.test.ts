@@ -146,17 +146,24 @@ describe("TokenIssuer", () => {
   });
 
   test("should verify", () => {
-    const { id, token } = handler.sign(options);
+    const { token } = handler.sign(options);
 
     expect(
       handler.verify(token, {
         audience: options.audience,
         clientId,
         deviceId: options.deviceId,
-        nonce: options.nonce,
         issuer,
+        nonce: options.nonce,
+        scope: ["scope"],
       }),
-    ).toStrictEqual({
+    ).toBeTruthy();
+  });
+
+  test("should return all signed values", () => {
+    const { id, token } = handler.sign(options);
+
+    expect(handler.verify(token)).toStrictEqual({
       id,
       audience: ["audience"],
       authContextClass: "acr",
@@ -315,6 +322,26 @@ describe("TokenIssuer", () => {
     expect(() =>
       handler.verify(token, {
         deviceId: "434c382e-bc9c-4dca-8672-55a7b9026250",
+      }),
+    ).toThrow(TokenError);
+  });
+
+  test("should reject missing scope", () => {
+    const { token } = handler.sign({ ...options, scope: [] });
+
+    expect(() =>
+      handler.verify(token, {
+        scope: ["unexpected"],
+      }),
+    ).toThrow(TokenError);
+  });
+
+  test("should reject invalid scope", () => {
+    const { token } = handler.sign(options);
+
+    expect(() =>
+      handler.verify(token, {
+        scope: ["unexpected"],
       }),
     ).toThrow(TokenError);
   });

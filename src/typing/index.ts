@@ -34,7 +34,7 @@ export interface IssuerClaims extends DefaultClaims {
 
 export interface IssuerSignOptions<Payload> {
   id?: string;
-  audience: Array<string>;
+  audience: string | Array<string>;
   authContextClass?: string;
   authMethodsReference?: Array<string>;
   clientId?: string;
@@ -69,6 +69,7 @@ export interface IssuerVerifyOptions {
   issuer: string;
   maxAge: string;
   nonce: string;
+  scope: Array<string>;
   subject: string;
   type: string;
 }
