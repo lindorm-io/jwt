@@ -14,9 +14,11 @@ export interface IssuerDecodedClaims<Payload, Claims> {
 }
 
 export interface IssuerDecodeData<Payload, Claims> extends IssuerDecodedClaims<Payload, Claims> {
+  active: boolean;
   expires: number;
   issuedAt: number;
   issuer: string;
   keyId: string;
   notBefore: number;
+  now: number;
 }

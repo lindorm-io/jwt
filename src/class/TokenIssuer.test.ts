@@ -111,6 +111,7 @@ describe("TokenIssuer", () => {
 
     expect(TokenIssuer.decode(token)).toStrictEqual({
       id,
+      active: true,
       audience: ["audience"],
       authContextClass: ["acr"],
       authMethodsReference: ["amr"],
@@ -121,6 +122,7 @@ describe("TokenIssuer", () => {
       keyId: "7531da89-12e9-403e-925a-5da49100635c",
       nonce: "bed190d568a5456bb15a39cf71d72022",
       notBefore: 1609488000,
+      now: 1609488000,
       payload: { payloadKey: "payloadValue" },
       permission: "permission",
       scopes: ["scope"],
@@ -150,6 +152,7 @@ describe("TokenIssuer", () => {
 
     expect(handler.verify(token)).toStrictEqual({
       id,
+      active: true,
       audience: ["audience"],
       authContextClass: ["acr"],
       authMethodsReference: ["amr"],
@@ -159,6 +162,7 @@ describe("TokenIssuer", () => {
       issuer: "issuer",
       nonce: "bed190d568a5456bb15a39cf71d72022",
       notBefore: 1609488000,
+      now: 1609488000,
       payload: { payloadKey: "payloadValue" },
       permission: "permission",
       scopes: ["scope"],
@@ -174,6 +178,7 @@ describe("TokenIssuer", () => {
 
     expect(handler.verify(token)).toStrictEqual({
       id: id,
+      active: true,
       audience: ["audience"],
       authContextClass: [],
       authMethodsReference: [],
@@ -183,6 +188,7 @@ describe("TokenIssuer", () => {
       issuer: "issuer",
       nonce: null,
       notBefore: 1609488000,
+      now: 1609488000,
       payload: {},
       permission: null,
       scopes: [],

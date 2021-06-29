@@ -168,11 +168,13 @@ export class TokenIssuer {
       payload: object,
     }: any = decode(token, { complete: true });
 
+    const now = TokenIssuer.getUnixTime(new Date());
     const { acr, amr, aud, exp, iam, iat, iss, jti, nbf, nonce, payload, scope, sub, token_type, username, ...claims } =
       object;
 
     return {
       id: jti,
+      active: iat <= now && nbf <= now && exp >= now,
       audience: aud || [],
       authContextClass: acr ? acr.split(" ") : [],
       authMethodsReference: amr ? amr.split(" ") : [],
@@ -180,9 +182,10 @@ export class TokenIssuer {
       expires: exp,
       issuedAt: iat,
       issuer: iss,
-      keyId,
+      keyId: keyId,
       nonce: nonce || null,
       notBefore: nbf,
+      now: now,
       payload: payload ? camelKeys<Record<string, unknown>, Payload>(payload) : ({} as Payload),
       permission: iam || null,
       scopes: scope ? scope.split(" ") : [],
